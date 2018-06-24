@@ -26,9 +26,9 @@ LinkedList AllocateLinkedList(void) {
 
   // Step 1.
   // initialize the newly allocated record structure
-
-
-
+  ll->head = NULL;
+  ll->tail = NULL;
+  ll->num_elements = 0;
   // return our newly minted linked list
   return ll;
 }
@@ -43,7 +43,8 @@ void FreeLinkedList(LinkedList list,
   // sweep through the list and free all of the nodes' payloads as
   // well as the nodes themselves
   while (list->head != NULL) {
-
+    payload_free_function(list->head->payload);
+    list->head = list->head->next;
   }
 
   // free the list record
@@ -85,9 +86,11 @@ bool PushLinkedList(LinkedList list, LLPayload_t payload) {
 
   // STEP 3.
   // typical case; list has >=1 elements
-
-
-
+  list->num_elements += 1;
+  ln->next = list->head;
+  ln->prev = NULL;
+  list->head->prev = ln;
+  list->head = ln;
   // return success
   return true;
 }
@@ -103,9 +106,21 @@ bool PopLinkedList(LinkedList list, LLPayload_t *payload_ptr) {
   // and (b) the general case of a list with >=2 elements in it.
   // Be sure to call free() to deallocate the memory that was
   // previously allocated by PushLinkedList().
+  LinkedListNodePtr ln = list->head;
+  payload_ptr = ln->payload;
 
-
-
+  if (list->num_elements == 1) {
+    // degenerate case; list has single element
+    Verify333(list->head == list->tail);
+    list->num_elements = 0U;
+    list->head = list->tail = NULL;
+    free(ln);
+    return true;
+  }
+  // typical case; list has > 1 elements
+  list->num_elements -= 1;
+  list->head = ln->next;
+  free(ln);
   return true;
 }
 
@@ -116,8 +131,30 @@ bool AppendLinkedList(LinkedList list, LLPayload_t payload) {
   // Step 5: implement AppendLinkedList.  It's kind of like
   // PushLinkedList, but obviously you need to add to the end
   // instead of the beginning.
-
-
+  // allocate space for the new node.
+  LinkedListNodePtr ln =
+    (LinkedListNodePtr) malloc(sizeof(LinkedListNode));
+  if (ln == NULL) {
+    // out of memory
+    return false;
+  }
+  // set the payload
+  ln->payload = payload;
+  if (list->num_elements == 0) {
+    // degenerate case; list is currently empty
+    Verify333(list->head == NULL);  // debugging aid
+    Verify333(list->tail == NULL);  // debugging aid
+    ln->next = ln->prev = NULL;
+    list->head = list->tail = ln;
+    list->num_elements = 1U;
+    return true;
+  }
+  // list has more than one element
+  list->num_elements += 1;
+  ln->prev = list->tail;
+  ln->next = NULL;
+  list->tail->next = ln;
+  list->tail = ln;
 
   return true;
 }
@@ -128,9 +165,21 @@ bool SliceLinkedList(LinkedList list, LLPayload_t *payload_ptr) {
   Verify333(list != NULL);
 
   // Step 6: implement SliceLinkedList.
+  LinkedListNodePtr ln = list->tail;
+  payload_ptr = ln->payload;
 
-
-
+  if (list->num_elements == 1) {
+    // degenerate case; list has single element
+    Verify333(list->head == list->tail);
+    list->num_elements = 0U;
+    list->head = list->tail = NULL;
+    free(ln);
+    return true;
+  }
+  // typical case; list has > 1 elements
+  list->num_elements -= 1;
+  list->tail = ln->prev;
+  free(ln);
   return true;
 }
 
@@ -223,9 +272,10 @@ bool LLIteratorNext(LLIter iter) {
 
   // Step 7: if there is another node beyond the iterator, advance to it,
   // and return true.
-
-
-
+  if (LLIteratorHasNext(iter)) {
+    iter->node = iter->node->next;
+    return true;
+  }
   // Nope, there isn't another node, so return failure.
   return false;
 }
@@ -251,9 +301,10 @@ bool LLIteratorPrev(LLIter iter) {
 
   // Step 8:  if there is another node beyond the iterator, advance to it,
   // and return true.
-
-
-
+  if (LLIteratorHasPrev(iter)) {
+    iter->node = iter->node->prev;
+    return true;
+  }
   // nope, so return failure.
   return false;
 }
@@ -289,8 +340,27 @@ bool LLIteratorDelete(LLIter iter,
   // the iterator is pointing to, and also free any LinkedList
   // data structure element as appropriate.
 
-
-
+  // free the payload
+  LLPayload_t *payload;
+  if (iter->list->num_elements == 1
+    || iter->list->head == iter->node) {
+    // degenerate case: the list becomes empty after deleting
+    //                  or iter points at head
+    PopLinkedList(iter->list, payload);
+  } else if (iter->list->tail == iter->node) {
+    // degenerate case: iter points at tail
+    SliceLinkedList(iter->list, payload);
+  } else {
+    // Fully general case:
+    LinkedListNodePtr previous_node = iter->node->prev;
+    LinkedListNodePtr next_node = iter->node->next;
+    previous_node->next = next_node;
+    next_node->prev = previous_node;
+    iter->list->num_elements -= 1;
+    payload = iter->node->payload;
+    free(iter->node);
+  }
+  payload_free_function(payload);
   return true;
 }
 
