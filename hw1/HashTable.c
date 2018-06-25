@@ -171,20 +171,23 @@ HWSize_t HashKeyToBucketNum(HashTable ht, HTKey_t key) {
 //    was returned to the caller via that keyvalue return parameter.
 int LookupChain(LinkedList chain,
                    HTKey_t key,
-                   HTKeyValue* keyvalue,
+                   HTKeyValuePtr* keyvalue,
                    int remove) {
   LLIter iter = LLMakeIterator(chain, 0U);
+  if (iter == NULL) {
+    return 0;
+  }
   int result = 0;
   HTKeyValuePtr oldkeyvalue;
-  LLIteratorGetPayload(iter, oldkeyvalue);
+  LLIteratorGetPayload(iter, (void *)&oldkeyvalue);
   if (oldkeyvalue->key == key) {
-    keyvalue = oldkeyvalue;
+    *keyvalue = oldkeyvalue;
     result = 1;
   } else {
     while (LLIteratorNext(iter)) {
-      LLIteratorGetPayload(iter, oldkeyvalue);
+      LLIteratorGetPayload(iter, (void *)&oldkeyvalue);
       if (oldkeyvalue->key == key) {
-        keyvalue = oldkeyvalue;
+        *keyvalue = oldkeyvalue;
         result = 1;
         break;
       }
@@ -193,7 +196,6 @@ int LookupChain(LinkedList chain,
   // we find the iterator and we want to remove it
   if (result && remove) {
     LLIteratorDelete(iter, LLNullFree);
-    free(keyvalue);
   }
   return result;
 }
@@ -220,11 +222,11 @@ int InsertHashTable(HashTable table,
   // all that logic inside here.  You might also find that your helper
   // can be reused in steps 2 and 3.
   HTKeyValuePtr keyvalue;
-  if (LookupChain(insertchain, newkeyvalue.key, keyvalue, 0U)) {
+  if (LookupChain(insertchain, newkeyvalue.key, &keyvalue, 0U)) {
     // the key is present
     *oldkeyvalue = *keyvalue;
     *keyvalue = newkeyvalue;
-    return 1;
+    return 2;
   }
   keyvalue = (HTKeyValuePtr) malloc(sizeof(HTKeyValue));
   if (keyvalue == NULL) {
@@ -232,7 +234,7 @@ int InsertHashTable(HashTable table,
     return 0;
   }
   *keyvalue = newkeyvalue;
-  PopLinkedList(insertchain, keyvalue);
+  PushLinkedList(insertchain, keyvalue);
   table->num_elements += 1;
   return 1;  // You may need to change this return value.
 }
@@ -248,7 +250,7 @@ int LookupHashTable(HashTable table,
   bucket = HashKeyToBucketNum(table, key);
   chain = table->buckets[bucket];
   HTKeyValuePtr oldkeyvalue;
-  if (LookupChain(chain, key, oldkeyvalue, 0)) {
+  if (LookupChain(chain, key, &oldkeyvalue, 0)) {
     // the key value pair exist
     *keyvalue = *oldkeyvalue;
     return 1;
@@ -266,7 +268,10 @@ int RemoveFromHashTable(HashTable table,
   LinkedList chain;
   bucket = HashKeyToBucketNum(table, key);
   chain = table->buckets[bucket];
-  if (LookupChain(chain, key, keyvalue, 1)) {
+  HTKeyValuePtr oldkeyvalue;
+  if (LookupChain(chain, key, &oldkeyvalue, 1)) {
+    *keyvalue = *oldkeyvalue;
+    free(oldkeyvalue);
     table->num_elements -= 1;
     return 1;
   }
@@ -364,7 +369,7 @@ int HTIteratorGet(HTIter iter, HTKeyValue *keyvalue) {
     return 0;
   }
   HTKeyValuePtr oldkeyvalue;
-  LLIteratorGetPayload(iter->bucket_it, oldkeyvalue);
+  LLIteratorGetPayload(iter->bucket_it, &oldkeyvalue);
   *keyvalue = *oldkeyvalue;
   return 1;  // you might need to change this return value.
 }

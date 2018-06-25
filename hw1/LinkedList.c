@@ -106,8 +106,11 @@ bool PopLinkedList(LinkedList list, LLPayload_t *payload_ptr) {
   // and (b) the general case of a list with >=2 elements in it.
   // Be sure to call free() to deallocate the memory that was
   // previously allocated by PushLinkedList().
+  if (list->num_elements < 1) {
+    return false;
+  }
   LinkedListNodePtr ln = list->head;
-  payload_ptr = ln->payload;
+  *payload_ptr = (LLPayload_t)ln->payload;
 
   if (list->num_elements == 1) {
     // degenerate case; list has single element
@@ -120,6 +123,7 @@ bool PopLinkedList(LinkedList list, LLPayload_t *payload_ptr) {
   // typical case; list has > 1 elements
   list->num_elements -= 1;
   list->head = ln->next;
+  list->head->prev = NULL;
   free(ln);
   return true;
 }
@@ -165,8 +169,11 @@ bool SliceLinkedList(LinkedList list, LLPayload_t *payload_ptr) {
   Verify333(list != NULL);
 
   // Step 6: implement SliceLinkedList.
+  if (list->num_elements < 1) {
+    return false;
+  }
   LinkedListNodePtr ln = list->tail;
-  payload_ptr = ln->payload;
+  *payload_ptr = (LLPayload_t)ln->payload;
 
   if (list->num_elements == 1) {
     // degenerate case; list has single element
@@ -179,6 +186,7 @@ bool SliceLinkedList(LinkedList list, LLPayload_t *payload_ptr) {
   // typical case; list has > 1 elements
   list->num_elements -= 1;
   list->tail = ln->prev;
+  ln->prev->next = NULL;
   free(ln);
   return true;
 }
@@ -316,7 +324,7 @@ void LLIteratorGetPayload(LLIter iter, LLPayload_t *payload) {
   Verify333(iter->node != NULL);
 
   // set the return parameter.
-  *payload = iter->node->payload;
+  *payload = (LLPayload_t)iter->node->payload;
 }
 
 bool LLIteratorDelete(LLIter iter,
@@ -341,16 +349,18 @@ bool LLIteratorDelete(LLIter iter,
   // data structure element as appropriate.
 
   // free the payload
-  LLPayload_t *payload;
+  LLPayload_t payload;
   int result;
   if (iter->list->num_elements == 1
     || iter->list->head == iter->node) {
     // degenerate case: the list becomes empty after deleting
     //                  or iter points at head
-    result = PopLinkedList(iter->list, payload);
+    result = PopLinkedList(iter->list, &payload);
+    iter->node = iter->list->head;
   } else if (iter->list->tail == iter->node) {
     // degenerate case: iter points at tail
-    result = SliceLinkedList(iter->list, payload);
+    result = SliceLinkedList(iter->list, &payload);
+    iter->node = iter->list->head;
   } else {
     // Fully general case:
     LinkedListNodePtr previous_node = iter->node->prev;
@@ -360,12 +370,13 @@ bool LLIteratorDelete(LLIter iter,
     iter->list->num_elements -= 1;
     payload = iter->node->payload;
     free(iter->node);
+    iter->node = next_node;
     result = 1;
   }
-  if (result) { 
+  if (result) {
     payload_free_function(payload);
   }
-  return result;
+  return iter->list->num_elements != 0;
 }
 
 bool LLIteratorInsertBefore(LLIter iter, LLPayload_t payload) {
