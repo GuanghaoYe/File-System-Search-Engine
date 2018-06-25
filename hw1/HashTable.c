@@ -197,6 +197,7 @@ int LookupChain(LinkedList chain,
   if (result && remove) {
     LLIteratorDelete(iter, LLNullFree);
   }
+  LLIteratorFree(iter);
   return result;
 }
 
@@ -369,7 +370,7 @@ int HTIteratorGet(HTIter iter, HTKeyValue *keyvalue) {
     return 0;
   }
   HTKeyValuePtr oldkeyvalue;
-  LLIteratorGetPayload(iter->bucket_it, &oldkeyvalue);
+  LLIteratorGetPayload(iter->bucket_it, (void *) &oldkeyvalue);
   *keyvalue = *oldkeyvalue;
   return 1;  // you might need to change this return value.
 }
