@@ -21,7 +21,7 @@ CPPUNITFLAGS = -L../gtest -lgtest
 # define common dependencies
 OBJS = LinkedList.o HashTable.o Verify333.o
 HEADERS = LinkedList.h HashTable.h CSE333.h
-TESTOBJS = test_linkedlist.o test_hashtable.o test_suite.o
+TESTOBJS = test_linkedlist.o test_hashtable.o test_hashtable_bonus.o test_suite.o
 TESTHEADERS = test_linkedlist.h test_hashtable.h
 
 # compile everything; this is the default rule that fires if a user
