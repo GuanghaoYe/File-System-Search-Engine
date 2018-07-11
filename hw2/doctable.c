@@ -25,6 +25,9 @@ typedef struct doctablerecord_st {
   DocID_t max_id;              // max docID allocated so far
 } DocTableRecord;
 
+void DocNameFree(HTValue_t payload) { free((char *)payload); }
+void DocIDFree(HTValue_t payload) { free((int*)payload); }
+
 DocTable AllocateDocTable(void) {
   DocTableRecord *dt = (DocTableRecord *) malloc(sizeof(DocTableRecord));
   Verify333(dt != NULL);
@@ -42,7 +45,8 @@ void FreeDocTable(DocTable table) {
   Verify333(table != NULL);
 
   // STEP 1.
-
+  FreeHashTable(table->docid_to_docname, DocNameFree);
+  FreeHashTable(table->docname_to_docid, DocIDFree);
   free(table);
 }
 
@@ -54,6 +58,7 @@ HWSize_t DTNumDocsInDocTable(DocTable table) {
 DocID_t DTRegisterDocumentName(DocTable table, char *docname) {
   // Allocate space for the docid.
   char       *doccopy;
+  int        retval;
   DocID_t   *docid = (DocID_t *) malloc(sizeof(DocID_t));
   DocID_t   res;
   HTKeyValue kv, oldkv;
@@ -71,6 +76,12 @@ DocID_t DTRegisterDocumentName(DocTable table, char *docname) {
   // free up the malloc'ed space and return the existing docid
 
   // STEP 2.
+  res = DTLookupDocumentName(table, docname);
+  if (res != 0) {
+    free(docid);
+    free(doccopy);
+    return res;
+  }
 
   // allocate the next docID
   table->max_id += 1;
@@ -79,11 +90,16 @@ DocID_t DTRegisterDocumentName(DocTable table, char *docname) {
   // STEP 3.
   // Set up the key/value for the docid_to_docname mapping, and
   // do the insert.
-
+  kv.key = *docid;
+  kv.value = doccopy;
+  InsertHashTable(table->docid_to_docname, kv, &oldkv);
 
   // STEP 4.
   // Set up the key/value for the docname_to_docid mapping, and
   // do the insert.
+  kv.key = FNVHash64(doccopy, strlen(doccopy));
+  kv.value = docid;
+  InsertHashTable(table->docname_to_docid, kv, &oldkv);
 
   return *docid;
 }
@@ -101,6 +117,14 @@ DocID_t DTLookupDocumentName(DocTable table, char *docname) {
   // docname_to_docid table within dt, and return
   // either "0" if the docname isn't found or the
   // docID if it is.
+  res = LookupHashTable(table->docname_to_docid, FNVHash64(docname, strlen(docname)), &kv);
+
+  if (res == 1) {
+    return *(DocID_t*)(kv.value);
+  } else {
+    return 0;
+  }
+
 }
 
 char *DTLookupDocID(DocTable table, DocID_t docid) {
@@ -115,6 +139,13 @@ char *DTLookupDocID(DocTable table, DocID_t docid) {
   // and either return the string (i.e., the (char *)
   // saved in the value field for that key) or
   // NULL if the key isn't in the table.
+
+  res = LookupHashTable(table->docid_to_docname, docid, &kv);
+  if (res == 1) {
+    return kv.value;
+  } else {
+    return NULL;
+  }
 }
 
 HashTable DTGetDocidTable(DocTable table) {
