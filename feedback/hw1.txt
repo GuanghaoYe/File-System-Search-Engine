@@ -1,0 +1,20 @@
+
+  ====  CSE 333 HW1 Feedback  ====
+
+
+Test Suite:   230/230
+
+
+Valgrind:   3/5
+valgrind returns some minor errors.
+
+Modularity:    5/5
+
+
+Robustness and error checking:   5/5
+
+
+Blending with starter code, comments and other style issues:   10/10
+
+
+Extra Credit:   5/5
