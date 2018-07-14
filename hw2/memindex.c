@@ -78,7 +78,7 @@ int MIAddPostingList(MemIndex index, char *word, DocID_t docid,
   // even though you hadn't yet finished the
   // memindex.c implementation.
 
-  return 1;
+  // return 1;
 
   // First, we have to see if the word we're being handed
   // already exists in the inverted index.
@@ -94,6 +94,15 @@ int MIAddPostingList(MemIndex index, char *word, DocID_t docid,
     //   (3) insert that hashtable into the WordDocSet, and
     //   (4) insert the the new WordDocSet into the inverted
     //       index (i.e., into the "index" table).
+    wds = malloc(sizeof(WordDocSet));
+    wds->word = word;
+    wds->docIDs = AllocateHashTable(23);
+    kv.key = wordkey;
+    kv.value = wds;
+    res = InsertHashTable(index, kv, &hitkv);
+    Verify333(res == 1);
+
+
   } else {
     // Yes, this word already exists in the inverted index.
     // So, there's no need to insert it again; we can go
@@ -114,17 +123,22 @@ int MIAddPostingList(MemIndex index, char *word, DocID_t docid,
   // The entry's key is this docID and the entry's value
   // is the "positions" word positions list we were passed
   // as an argument.
-
+  kv.key = docid;
+  kv.value = positions;
+  res = InsertHashTable(wds->docIDs, kv, &hitkv);
+  Verify333(res == 1);
 
   return 1;
 }
 
 LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
   LinkedList retlist;
-  HTKeyValue kv;
+  HTKeyValue kv, kvhit;
   WordDocSet *wds;
   int res;
   HTKey_t wordkey;
+  HTIter iter;
+  SearchResult *sr;
 
   // If the user provided us with an empty search query, return NULL
   // to indicate failure.
@@ -149,8 +163,30 @@ LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
   // Then, append the SearchResult structure onto retlist.
   //
   // If there are no matching documents, free retlist and return NULL.
-
-
+  res = LookupHashTable(index, 
+                        FNVHash64((unsigned char*)query[0],strlen(query[0])), 
+                        &kv);
+  if (res != 1) {
+    FreeLinkedList(retlist, &MIListFree);
+    return NULL;
+  }
+  wds = (WordDocSet *) kv.value;
+  sr = malloc(sizeof(SearchResult));
+  iter = HashTableMakeIterator(wds->docIDs);
+  HTIteratorGet(iter, &kv);
+  sr->docid = kv.key;
+  sr->rank = NumElementsInLinkedList(kv.value);
+  res = AppendLinkedList(retlist, (void *)sr);
+  Verify333(res != 0);
+  while(HTIteratorNext(iter)) {
+    HTIteratorGet(iter, &kv);
+    sr = malloc(sizeof(SearchResult));
+    sr->docid = kv.key;
+    sr->rank = NumElementsInLinkedList(kv.value);
+    res = AppendLinkedList(retlist, (void *)sr);
+    Verify333(res != 0);
+  }
+  HTIteratorFree(iter);
   // Great; we have our search results for the first query
   // word.  If there is only one query word, we're done!
   // Sort the result list and return it to the caller.
@@ -158,6 +194,7 @@ LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
     SortLinkedList(retlist, 0, &MISearchListComparator);
     return retlist;
   }
+  
 
   // OK, there are additional query words.  Handle them one
   // at a time.
@@ -171,6 +208,13 @@ LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
     // If there are no matches, it means the overall query
     // should return no documents, so free retlist and return NULL.
 
+    wordkey = FNVHash64((unsigned char*)query[i], strlen(query[i]));
+    res = LookupHashTable(index, wordkey, &kv);
+    if (res != 1) {
+      FreeLinkedList(retlist, (LLPayloadFreeFnPtr)free);
+      return NULL;
+    }
+    wds = (WordDocSet *)kv.value;
 
     // STEP 6.
     // There are matches.  We're going to iterate through
@@ -187,7 +231,13 @@ LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
     Verify333(llit != NULL);
     ne = NumElementsInLinkedList(retlist);
     for (j = 0; j < ne; j++) {
-
+      LLIteratorGetPayload(llit, (LLPayload_t*)&sr);
+      res = LookupHashTable(wds->docIDs, sr->docid, &kvhit);
+      if (res != 1) {
+        LLIteratorDelete(llit, MINullFree);
+      } else {
+        LLIteratorNext(llit);
+      }
     }
     LLIteratorFree(llit);
 

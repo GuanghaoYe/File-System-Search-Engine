@@ -48,7 +48,7 @@ static void LoopAndInsert(HashTable tab, char *content);
 char *ReadFile(const char *filename, HWSize_t *size) {
   struct stat filestat;
   char *buf;
-  int result, fd;
+  int fd;
   ssize_t numread;
   size_t left_to_read;
 
@@ -66,9 +66,10 @@ char *ReadFile(const char *filename, HWSize_t *size) {
   // or something else.  (use the S_ISREG macro described
   // in "man 2 stat")
 
-  if(filestat.st_mode != __S_IFREG) {
+  if(!S_ISREG(filestat.st_mode)) {
     return NULL;
-  } 
+  }
+  
 
   // STEP 3.
   // Attempt to open the file for reading.  (man 2 open)
@@ -84,8 +85,6 @@ char *ReadFile(const char *filename, HWSize_t *size) {
   if (buf == NULL) {
     return NULL;
   }
-
-
   // STEP 5.
   // Read in the file contents.  Use the read system call. (man 2 read.)  Be
   // sure to handle the case that (read returns -1) and errno is (either
@@ -96,7 +95,7 @@ char *ReadFile(const char *filename, HWSize_t *size) {
   // particular what the return values -1 and 0 imply.)
   left_to_read = filestat.st_size;
   while (left_to_read > 0) {
-    numread = read(fd, buf, (filestat.st_size) - left_to_read);
+    numread = read(fd, buf + (filestat.st_size - left_to_read), left_to_read);
     if (numread == -1) {
       if (errno == EINTR || errno == EAGAIN) {
         continue;
@@ -227,7 +226,7 @@ static void LoopAndInsert(HashTable tab, char *content) {
       bool fileend = ((*curptr) == '\0');
       if(wordstart != curptr) {
         *curptr = '\0';
-        AddToHashTable(tab, wordstart, curptr - content);
+        AddToHashTable(tab, wordstart, wordstart - content);
       }
       if (fileend) {
         break;
@@ -246,7 +245,7 @@ static void LoopAndInsert(HashTable tab, char *content) {
 static void AddToHashTable(HashTable tab, char *word, DocPositionOffset_t pos) {
   HTKey_t hashKey;
   int retval;
-  HTKeyValue kv;
+  HTKeyValue kv,oldkv;
 
   // Hash the string.
   hashKey = FNVHash64((unsigned char *) word, strlen(word));
@@ -270,11 +269,17 @@ static void AddToHashTable(HashTable tab, char *word, DocPositionOffset_t pos) {
     WordPositions *wp;
     char *newstr;
     wp = malloc(sizeof(WordPositions));
+    newstr = malloc(sizeof(char)*(strlen(word)+1));
+    strcpy(newstr, word);
     Verify333(wp != NULL);
-    wp->word = word;
+    wp->word = newstr;
     wp->positions = AllocateLinkedList();
     Verify333(wp->positions != NULL);
     retval = AppendLinkedList(wp->positions, (LLPayload_t)((intptr_t) pos));
     Verify333(retval != 0);
+    kv.key = hashKey;
+    kv.value = wp;
+    retval = InsertHashTable(tab, kv, &oldkv);
+    Verify333(retval == 1);
   }
 }

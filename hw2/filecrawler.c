@@ -95,6 +95,9 @@ static void HandleDir(char *dirpath, DIR *d, DocTable *doctable,
     // }
     dirent = readdir(d);
     if (dirent == NULL) {
+      if (errno == EINTR || errno == EAGAIN) {
+        continue;
+      }
       return ;
     }
 
@@ -179,7 +182,7 @@ static void HandleFile(char *fpath, DocTable *doctable, MemIndex *index) {
   // Invoke the DTRegisterDocumentName() function in
   // doctable.h/c to register the new file with the
   // doctable.
-  docID = DTRegisterDocumentName(doctable, fpath);
+  docID = DTRegisterDocumentName(*doctable, fpath);
   Verify333(docID != 0);
 
   // Loop through the hash table.
@@ -197,8 +200,8 @@ static void HandleFile(char *fpath, DocTable *doctable, MemIndex *index) {
     // to add the word, document ID, and positions linked list into the
     // inverted index.
     HTIteratorDelete(it, &kv);
-    wp->word = kv.key;
-    MIAddPostingList(index, kv.key,docID, )
+    wp = kv.value;
+    MIAddPostingList(*index, wp->word, docID, wp->positions);
 
     // Since we've transferred ownership of the memory associated with both
     // the "word" and "positions" field of this WordPositions structure, and
