@@ -171,21 +171,15 @@ LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
     return NULL;
   }
   wds = (WordDocSet *) kv.value;
-  sr = malloc(sizeof(SearchResult));
   iter = HashTableMakeIterator(wds->docIDs);
-  HTIteratorGet(iter, &kv);
-  sr->docid = kv.key;
-  sr->rank = NumElementsInLinkedList(kv.value);
-  res = AppendLinkedList(retlist, (void *)sr);
-  Verify333(res != 0);
-  while(HTIteratorNext(iter)) {
+  do {
     HTIteratorGet(iter, &kv);
     sr = malloc(sizeof(SearchResult));
     sr->docid = kv.key;
     sr->rank = NumElementsInLinkedList(kv.value);
     res = AppendLinkedList(retlist, (void *)sr);
     Verify333(res != 0);
-  }
+  } while((HTIteratorNext(iter)));
   HTIteratorFree(iter);
   // Great; we have our search results for the first query
   // word.  If there is only one query word, we're done!
@@ -234,8 +228,9 @@ LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
       LLIteratorGetPayload(llit, (LLPayload_t*)&sr);
       res = LookupHashTable(wds->docIDs, sr->docid, &kvhit);
       if (res != 1) {
-        LLIteratorDelete(llit, MINullFree);
+        LLIteratorDelete(llit, (LLPayloadFreeFnPtr)free);
       } else {
+        sr->rank += NumElementsInLinkedList(kvhit.value);
         LLIteratorNext(llit);
       }
     }
