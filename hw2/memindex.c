@@ -163,8 +163,9 @@ LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
   // Then, append the SearchResult structure onto retlist.
   //
   // If there are no matching documents, free retlist and return NULL.
-  res = LookupHashTable(index, 
-                        FNVHash64((unsigned char*)query[0],strlen(query[0])), 
+  res = LookupHashTable(index,
+                        FNVHash64((unsigned char*)query[0],
+                        strlen(query[0])),
                         &kv);
   if (res != 1) {
     FreeLinkedList(retlist, &MIListFree);
@@ -179,7 +180,7 @@ LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
     sr->rank = NumElementsInLinkedList(kv.value);
     res = AppendLinkedList(retlist, (void *)sr);
     Verify333(res != 0);
-  } while((HTIteratorNext(iter)));
+  } while ((HTIteratorNext(iter)));
   HTIteratorFree(iter);
   // Great; we have our search results for the first query
   // word.  If there is only one query word, we're done!
@@ -188,7 +189,6 @@ LinkedList MIProcessQuery(MemIndex index, char *query[], uint8_t qlen) {
     SortLinkedList(retlist, 0, &MISearchListComparator);
     return retlist;
   }
-  
 
   // OK, there are additional query words.  Handle them one
   // at a time.

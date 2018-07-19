@@ -59,18 +59,14 @@ char *ReadFile(const char *filename, HWSize_t *size) {
   if (stat(filename, &filestat) != 0) {
     return NULL;
   }
-  
-
   // STEP 2.
   // Make sure this is a "regular file" and not a directory
   // or something else.  (use the S_ISREG macro described
   // in "man 2 stat")
 
-  if(!S_ISREG(filestat.st_mode)) {
+  if (!S_ISREG(filestat.st_mode)) {
     return NULL;
   }
-  
-
   // STEP 3.
   // Attempt to open the file for reading.  (man 2 open)
   fd = open(filename, O_RDONLY);
@@ -139,7 +135,7 @@ HashTable BuildWordHT(char *filename) {
   // failure.
 
   filecontent = ReadFile(filename, &filelen);
-  if (filecontent == NULL) 
+  if (filecontent == NULL)
     return NULL;
 
 
@@ -224,9 +220,9 @@ static void LoopAndInsert(HashTable tab, char *content) {
   while (1) {
     if (!isalpha(*curptr)) {
       bool fileend = ((*curptr) == '\0');
-      if(wordstart != curptr) {
+      if (wordstart != curptr) {
         *curptr = '\0';
-        if(Unfiltered(wordstart))
+        if (Unfiltered(wordstart))
           AddToHashTable(tab, wordstart, wordstart - content);
       }
       if (fileend) {
@@ -237,7 +233,7 @@ static void LoopAndInsert(HashTable tab, char *content) {
       }
     } else {
       *curptr = tolower(*curptr);
-      curptr++;  
+      curptr++;
     }
   }
 }
@@ -246,7 +242,7 @@ static void LoopAndInsert(HashTable tab, char *content) {
 static void AddToHashTable(HashTable tab, char *word, DocPositionOffset_t pos) {
   HTKey_t hashKey;
   int retval;
-  HTKeyValue kv,oldkv;
+  HTKeyValue kv, oldkv;
 
   // Hash the string.
   hashKey = FNVHash64((unsigned char *) word, strlen(word));
@@ -256,7 +252,8 @@ static void AddToHashTable(HashTable tab, char *word, DocPositionOffset_t pos) {
   retval = LookupHashTable(tab, hashKey, &kv);
   if (retval == 1) {
     // Yes; we just need to add a position in using AppendLinkedList().  Note
-    // how we're casting the DocPositionOffset_t position variable to an LLPayload_t to store
+    // how we're casting the DocPositionOffset_t position variable
+    // to an LLPayload_t to store
     // it in the linked list payload without needing to malloc space for it.
     // Ugly, but it works!
     WordPositions *wp = (WordPositions *) kv.value;
@@ -287,13 +284,13 @@ static void AddToHashTable(HashTable tab, char *word, DocPositionOffset_t pos) {
 
 // A local helper function to check if a word is a stop word
 bool IsStopWord(char* str) {
-  const char * STOPWORDS [] = {
-    "a", "an", "and", "are", "as", "at", "be", "by", "from",\
-    "has", "he", "in", "is", "it", "its", "of", "on", "that",\
+  const char * STOPWORDS[] = {
+    "a", "an", "and", "are", "as", "at", "be", "by", "from", \
+    "has", "he", "in", "is", "it", "its", "of", "on", "that", \
     "the", "to", "was", "were", "will", "with"
   };
   int len = (sizeof(STOPWORDS) / sizeof(const char *));
-  for(int i = 0; i < len; ++i) {
+  for (int i = 0; i < len; ++i) {
     if (strcmp(str, STOPWORDS[i]) == 0) {
       return 1;
     }

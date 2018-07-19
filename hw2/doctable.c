@@ -127,7 +127,6 @@ DocID_t DTLookupDocumentName(DocTable table, char *docname) {
   } else {
     return 0;
   }
-
 }
 
 char *DTLookupDocID(DocTable table, DocID_t docid) {

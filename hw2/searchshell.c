@@ -33,7 +33,7 @@ size_t ParseQuery(char*, char*[]);
 int main(int argc, char **argv) {
   if (argc != 2 && argc != 3)
     Usage();
-  if (argc == 3 && strcmp(argv[2],"-s") != 0) {
+  if (argc == 3 && strcmp(argv[2], "-s") != 0) {
     Usage();
   }
   SetFilter(argc == 3);
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   int retval;
   printf("Indexing \'%s\'\n", argv[1]);
   retval = CrawlFileTree(argv[1], &doctable, &index);
-  if(retval != 1) {
+  if (retval != 1) {
     Usage();
     return EXIT_FAILURE;
   }
@@ -81,9 +81,9 @@ size_t ParseQuery(char* buf, char* query[]) {
   char *ptr = buf;
   char* rest;
   size_t len = 0;
-  buf[strlen(buf)-1] = '\0'; // remove the newline character
-  while((token = strtok_r(ptr, " ", &rest))) {
-    if(Unfiltered(token))
+  buf[strlen(buf)-1] = '\0';  // remove the newline character
+  while ((token = strtok_r(ptr, " ", &rest))) {
+    if (Unfiltered(token))
       query[len++] = token;
     ptr = rest;
   }
@@ -95,10 +95,10 @@ void ProcessQuery(DocTable table, MemIndex index) {
   char buf[BUFSIZE];
   char* query[BUFSIZE];
   puts("enter query:");
-  while(fgets(buf, BUFSIZE, stdin) != NULL) {
+  while (fgets(buf, BUFSIZE, stdin) != NULL) {
     size_t len = ParseQuery(buf, query);
     retlist  = MIProcessQuery(index, query, len);
-    if(retlist == NULL || NumElementsInLinkedList(retlist) == 0) {
+    if (retlist == NULL || NumElementsInLinkedList(retlist) == 0) {
       puts("enter query:");
       continue;
     }
@@ -109,7 +109,7 @@ void ProcessQuery(DocTable table, MemIndex index) {
       LLIteratorGetPayload(llit, (LLPayload_t*)&sr);
       char* filename =  DTLookupDocID(table, sr->docid);
       printf("%s (%d)\n", filename, sr->rank);
-    } while(LLIteratorDelete(llit,(LLPayloadFreeFnPtr)free));
+    } while (LLIteratorDelete(llit, (LLPayloadFreeFnPtr)free));
     FreeLinkedList(retlist, (LLPayloadFreeFnPtr)free);
     LLIteratorFree(llit);
     puts("enter query:");

@@ -83,22 +83,16 @@ static void HandleDir(char *dirpath, DIR *d, DocTable *doctable,
     struct stat nextstat;
     struct dirent *dirent = NULL;
 
-    // STEP 1.  
+    // STEP 1.
     // Use the "readdir()" system call to read the next directory entry.
     // (man 3 readdir).  If we hit the end of the directory, return back
     // out of this function.
-    
-    // while((dirent = readdir(d)) != NULL) {
-    //   if (errno == EINTR || errno == EAGAIN) {
-    //     continue;
-    //   }
-    // }
     dirent = readdir(d);
     if (dirent == NULL) {
       if (errno == EINTR || errno == EAGAIN) {
         continue;
       }
-      return ;
+      return;
     }
 
 
@@ -108,11 +102,11 @@ static void HandleDir(char *dirpath, DIR *d, DocTable *doctable,
     // loop.) You can find out the name of the directory entry through the
     // "d_name" field of the struct dirent returned by readdir(), and you can
     // use strcmp() to compare it to "." or ".."
-    if(strcmp(dirent->d_name, ".") == 0) {
+    if (strcmp(dirent->d_name, ".") == 0) {
       continue;
     }
 
-    if(strcmp(dirent->d_name, "..") == 0) {
+    if (strcmp(dirent->d_name, "..") == 0) {
       continue;
     }
 
@@ -152,13 +146,12 @@ static void HandleDir(char *dirpath, DIR *d, DocTable *doctable,
       } else if (S_ISDIR(nextstat.st_mode)) {
         DIR* sd = opendir(newfile);
         if (sd == NULL) {
-          continue ;
+          continue;
         } else {
           HandleDir(newfile, sd, doctable, index);
         }
         closedir(sd);
       }
-
     }
 
     // Done with this file.  Fall back up to the next
@@ -176,8 +169,8 @@ static void HandleFile(char *fpath, DocTable *doctable, MemIndex *index) {
   // Invoke the BuildWordHT() function in fileparser.h/c to
   // build the word hashtable out of the file.
   tab = BuildWordHT(fpath);
-  if(tab == NULL) {
-    return ;
+  if (tab == NULL) {
+    return;
   }
 
   // STEP 5.
@@ -193,8 +186,6 @@ static void HandleFile(char *fpath, DocTable *doctable, MemIndex *index) {
   while (NumElementsInHashTable(tab) > 0) {
     WordPositions *wp;
     HTKeyValue kv;
-    
-
     // STEP 6.
     // Use HTIteratorDelete() to extract the next WordPositions structure out
     // of the hashtable. Then, use MIAddPostingList()  (defined in memindex.h)
@@ -203,7 +194,6 @@ static void HandleFile(char *fpath, DocTable *doctable, MemIndex *index) {
     HTIteratorDelete(it, &kv);
     wp = kv.value;
     MIAddPostingList(*index, wp->word, docID, wp->positions);
-
     // Since we've transferred ownership of the memory associated with both
     // the "word" and "positions" field of this WordPositions structure, and
     // since we've removed it from the table, we can now free the
