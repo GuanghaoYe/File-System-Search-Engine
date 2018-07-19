@@ -93,4 +93,23 @@ HashTable BuildWordHT(char *filename);
 // returned by BuildWordHT().
 void FreeWordHT(HashTable table);
 
+
+// An global variable to indicate whether we should filter stop words
+bool FILTER_STOP_WORD;
+
+
+// Unfiltered get an word and check whether we should filter that word
+// Arguments:
+//  - word: the word to check
+// Return:
+//
+// - True if we should not filter that word
+// - False otherwise
+bool Unfiltered(char *word);
+
+// SetFilter get an boolean value and change the global indicator of stop words
+// Arguments:
+// - val : the value that FILTER_STOP_WORD should change to
+void SetFilter(bool val);
+
 #endif  // _HW2_FILEPARSER_H

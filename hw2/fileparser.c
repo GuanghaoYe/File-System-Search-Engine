@@ -226,7 +226,8 @@ static void LoopAndInsert(HashTable tab, char *content) {
       bool fileend = ((*curptr) == '\0');
       if(wordstart != curptr) {
         *curptr = '\0';
-        AddToHashTable(tab, wordstart, wordstart - content);
+        if(Unfiltered(wordstart))
+          AddToHashTable(tab, wordstart, wordstart - content);
       }
       if (fileend) {
         break;
@@ -282,4 +283,29 @@ static void AddToHashTable(HashTable tab, char *word, DocPositionOffset_t pos) {
     retval = InsertHashTable(tab, kv, &oldkv);
     Verify333(retval == 1);
   }
+}
+
+// A local helper function to check if a word is a stop word
+bool IsStopWord(char* str) {
+  const char * STOPWORDS [] = {
+    "a", "an", "and", "are", "as", "at", "be", "by", "from",\
+    "has", "he", "in", "is", "it", "its", "of", "on", "that",\
+    "the", "to", "was", "were", "will", "with"
+  };
+  int len = (sizeof(STOPWORDS) / sizeof(const char *));
+  for(int i = 0; i < len; ++i) {
+    if (strcmp(str, STOPWORDS[i]) == 0) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+
+void SetFilter(bool val) {
+  FILTER_STOP_WORD = val;
+}
+
+bool Unfiltered(char *word) {
+  return (!FILTER_STOP_WORD) || (!IsStopWord(word));
 }

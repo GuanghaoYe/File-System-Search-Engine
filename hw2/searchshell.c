@@ -21,14 +21,22 @@
 #include "libhw1/CSE333.h"
 #include "memindex.h"
 #include "filecrawler.h"
+#include "fileparser.h"
 
 static void Usage(void);
+
+void ProcessQuery(DocTable, MemIndex);
+size_t ParseQuery(char*, char*[]);
 
 #define BUFSIZE (128)
 
 int main(int argc, char **argv) {
-  if (argc != 2)
+  if (argc != 2 && argc != 3)
     Usage();
+  if (argc == 3 && strcmp(argv[2],"-s") != 0) {
+    Usage();
+  }
+  SetFilter(argc == 3);
   // Implement searchshell!  We're giving you very few hints
   // on how to do it, so you'll need to figure out an appropriate
   // decomposition into functions as well as implementing the
@@ -45,43 +53,13 @@ int main(int argc, char **argv) {
   DocTable doctable;
   MemIndex index;
   int retval;
-  char buf[BUFSIZE];
-  char* query[BUFSIZE];
-  LinkedList retlist;
   printf("Indexing \'%s\'\n", argv[1]);
   retval = CrawlFileTree(argv[1], &doctable, &index);
   if(retval != 1) {
     Usage();
     return EXIT_FAILURE;
   }
-  puts("enter query:");
-  while(fgets(buf, BUFSIZE, stdin) != NULL) {
-    char* token;
-    char *ptr = buf;
-    char* rest;
-    int len = 0;
-    buf[strlen(buf)-1] = '\0'; // remove the newline character
-    while((token = strtok_r(ptr, " ", &rest))) {
-      query[len++] = token;
-      ptr = rest;
-    }
-    retlist  = MIProcessQuery(index, query, len);
-    if(retlist == NULL || NumElementsInLinkedList(retlist) == 0) {
-      puts("enter query:");
-      continue;
-    } 
-    LLIter llit = LLMakeIterator(retlist, 0);
-    Verify333(llit != NULL);
-    do {
-      SearchResult* sr;
-      LLIteratorGetPayload(llit, (LLPayload_t*)&sr);
-      char* filename =  DTLookupDocID(doctable, sr->docid);
-      printf("%s (%d)\n", filename, sr->rank);
-    } while(LLIteratorDelete(llit,(LLPayloadFreeFnPtr)free));
-    FreeLinkedList(retlist, (LLPayloadFreeFnPtr)free);
-    LLIteratorFree(llit);
-    puts("enter query:");
-  }
+  ProcessQuery(doctable, index);
   printf("Shut down...\n");
   FreeMemIndex(index);
   FreeDocTable(doctable);
@@ -89,10 +67,52 @@ int main(int argc, char **argv) {
 }
 
 static void Usage(void) {
-  fprintf(stderr, "Usage: ./searchshell <docroot>\n");
+  fprintf(stderr, "Usage: ./searchshell <docroot> [-s]\n");
   fprintf(stderr,
           "where <docroot> is an absolute or relative " \
-          "path to a directory to build an index under.\n");
+          "path to a directory to build an index under.\n" \
+          "[-s] is an optional flag for remove the stop words\n");
   exit(EXIT_FAILURE);
+}
+
+
+size_t ParseQuery(char* buf, char* query[]) {
+  char* token;
+  char *ptr = buf;
+  char* rest;
+  size_t len = 0;
+  buf[strlen(buf)-1] = '\0'; // remove the newline character
+  while((token = strtok_r(ptr, " ", &rest))) {
+    if(Unfiltered(token))
+      query[len++] = token;
+    ptr = rest;
+  }
+  return len;
+}
+
+void ProcessQuery(DocTable table, MemIndex index) {
+  LinkedList retlist;
+  char buf[BUFSIZE];
+  char* query[BUFSIZE];
+  puts("enter query:");
+  while(fgets(buf, BUFSIZE, stdin) != NULL) {
+    size_t len = ParseQuery(buf, query);
+    retlist  = MIProcessQuery(index, query, len);
+    if(retlist == NULL || NumElementsInLinkedList(retlist) == 0) {
+      puts("enter query:");
+      continue;
+    }
+    LLIter llit = LLMakeIterator(retlist, 0);
+    Verify333(llit != NULL);
+    do {
+      SearchResult* sr;
+      LLIteratorGetPayload(llit, (LLPayload_t*)&sr);
+      char* filename =  DTLookupDocID(table, sr->docid);
+      printf("%s (%d)\n", filename, sr->rank);
+    } while(LLIteratorDelete(llit,(LLPayloadFreeFnPtr)free));
+    FreeLinkedList(retlist, (LLPayloadFreeFnPtr)free);
+    LLIteratorFree(llit);
+    puts("enter query:");
+  }
 }
 
