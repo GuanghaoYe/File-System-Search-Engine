@@ -392,7 +392,7 @@ static HWSize_t WriteBucket(FILE *f,
     Verify333(it != nullptr);
     HWSize_t j;
     for (j = 0; j < chainlen_ho; j++) {
-      HWSize_t ellen, res,bucketlenno;
+      HWSize_t ellen, res,nextelposno;
       HTKeyValue *kv;
 
       // MISSING:
@@ -400,7 +400,7 @@ static HWSize_t WriteBucket(FILE *f,
       if (res != 0) 
         return 0;
       
-      bucketlenno = htonl(bucketlen);
+      nextelposno = htonl(nextelpos);
       res = fwrite(&bucketlenno, sizeof(HWSize_t), 1, f);
       if (res != 1) {
         return 0;
