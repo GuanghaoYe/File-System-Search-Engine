@@ -11,7 +11,7 @@
 
 #include <iostream>
 #include <algorithm>
-#include <utitlity>
+#include <utility>
 #include "./QueryProcessor.h"
 
 extern "C" {
