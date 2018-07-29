@@ -38,10 +38,14 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
   // Iterate through the elements, looking for our docID.
   for (auto it = elements.begin(); it != elements.end(); it++) {
     IndexFileOffset_t next_offset = *it;
-
+    HWSize_t res;
     // Slurp the next docid out of the element.
     docid_element_header header;
     // MISSING:
+    res = fseek(file_, next_offset, SEEK_SET);
+    Verify333(res == 0);
+    res = fread(&header, sizeof(header), 1, file_);
+    header.toHostFormat();
 
     // Is it a match?
     if (header.docid == docid) {
@@ -51,14 +55,21 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
       // successive positions.
 
       // MISSING:
-
+      std::list<DocPositionOffset_t> retval;
+      for (int i= 0; i < header.num_positions; ++i) {
+        DocPositionOffset_t nextpos;
+        res = fread(&nextpos, sizeof(nextpos), 1, file_);
+        Verify333(res == 1);
+        nextpos = ntohl(nextpos);
+        retval.push_back(nextpos);
+      }
 
 
       // Return the positions list through the output parameter,
       // and return true.
 
       // MISSING:
-
+      *ret_list = retval;
 
       return true;
     }
@@ -86,8 +97,10 @@ list<docid_element_header> DocIDTableReader::GetDocIDList() {
     // the bucket_rec.
     bucket_rec b_rec;
     // MISSING:
-
-
+    Verify333(fseek(file_, sizeof(header_) + i*sizeof(b_rec),
+                           SEEK_SET) == 0);
+    Verify333(fread(&b_rec, sizeof(b_rec), 1, file_) == 1);
+    b_rec.toHostFormat();
     // Sweep through the next bucket, iterating through each
     // chain element in the bucket.
     for (HWSize_t j = 0; j < b_rec.chain_len; j++) {
@@ -98,15 +111,16 @@ list<docid_element_header> DocIDTableReader::GetDocIDList() {
       // Read the next element position from the bucket header.
       element_position_rec  ep;
       // MISSING:
-
+      Verify333(fread(&ep, sizeof(ep), 1, file_) == 1);
+      ep.toHostFormat();
       // Seek to the element itself.
       // MISSING:
-
+      Verify333(fseek(file_, ep.element_position, SEEK_SET) == 0);
       // Read in the docid and number of positions from the element.
       docid_element_header doc_el;
       // MISSING:
-
-
+      Verify333(fread(&doc_el, sizeof(doc_el), 1, file_) == 1);
+      doc_el.toHostFormat();
       // Append it to our result list.
       docidlist.push_back(doc_el);
     }

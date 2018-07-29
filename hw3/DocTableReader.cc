@@ -41,11 +41,14 @@ bool DocTableReader::LookupDocID(const DocID_t &docid,
   // Iterate through the elements, looking for our docID.
   for (auto it = elements.begin(); it != elements.end(); it++) {
     IndexFileOffset_t next_offset = *it;
-
+    HWSize_t res;
     // Slurp the next docid out of the element.
     doctable_element_header header;
     // MISSING:
-
+    res = fseek(file_, next_offset, SEEK_SET);
+    Verify333(res == 0);
+    res = fread(&header, sizeof(header), 1, file_);
+    header.toHostFormat();
 
     // Is it a match?
     if (header.docid == docid) {
@@ -63,7 +66,7 @@ bool DocTableReader::LookupDocID(const DocID_t &docid,
       // and return it through the output parameter ret_str.  Return
       // true.
       // MISSING:
-
+      *ret_str = ss.str();
       return true;
     }
   }
