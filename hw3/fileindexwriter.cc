@@ -219,10 +219,7 @@ static HWSize_t WriteDocPositionListFn(FILE *f,
   for (i = 0; i < num_pos_ho; i++) {
     // Get the next position from the list.
     // MISSING
-    LLPayload_t payload;
-    LLIteratorGetPayload(it, &payload);
-
-    position = {(int32_t)(int64_t)payload};
+    LLIteratorGetPayload(it, (LLPayload_t *)&position.position);
     // Truncate to 32 bits, then convert it to network order and write it out.
     // MISSING:
     position.toDiskFormat();
