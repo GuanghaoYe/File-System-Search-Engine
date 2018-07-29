@@ -39,13 +39,12 @@ FileIndexReader::FileIndexReader(std::string filename,
 
   // Read the entire file header and convert to host format.
   // MISSING:
-  IndexFileHeader header;
-  res = fread(&header, sizeof(header), 1, file_);
+  res = fread(&header_, sizeof(header_), 1, file_);
   Verify333(res == 1);
-  header.toHostFormat();
+  header_.toHostFormat();
   // Verify that the magic number is correct.  Crash if not.
   // MISSING:
-  Verify333(header.magic_number == MAGIC_NUMBER);
+  Verify333(header_.magic_number == MAGIC_NUMBER);
 
   // Make sure the index file's length lines up with the header fields.
   struct stat f_stat;
@@ -65,7 +64,7 @@ FileIndexReader::FileIndexReader(std::string filename,
     HWSize_t left_to_read = header_.doctable_size + header_.index_size;
     while (left_to_read > 0) {
       res = fread(buf, sizeof(uint8_t), 512, file_);
-      for (int i = 0; i < res; ++i) {
+      for (HWSize_t i = 0; i < res; ++i) {
         crcobj.FoldByteIntoCRC(buf[i]);
       }
       left_to_read -= res;
