@@ -68,13 +68,13 @@ QueryProcessor::ProcessQuerySingleIndex(const vector<string> &query,
   list<DocPositionOffset_t> ret_list;
   docidtable = indextable->LookupWord(query[0]);
   if (docidtable == nullptr)
-    return retval;
+    return result;
   docidlist = docidtable->GetDocIDList();
   for (HWSize_t i = 1; i < query.size(); ++i) {
     docidtable = indextable->LookupWord(query[i]);
     if (docidtable == nullptr)
-      return retval;
-    for(auto it = docidlist.rbegin(); it != docidlist.rend();) {
+      return result;
+    for(auto it = docidlist.begin(); it != docidlist.end();) {
       bool res = docidtable->LookupDocID(it->docid, &ret_list);
       if (!res) {
         it = docidlist.erase(it);
