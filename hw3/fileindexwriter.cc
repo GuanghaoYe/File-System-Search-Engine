@@ -401,7 +401,7 @@ static HWSize_t WriteBucket(FILE *f,
         return 0;
       
       nextelposno = htonl(nextelpos);
-      res = fwrite(&bucketlenno, sizeof(HWSize_t), 1, f);
+      res = fwrite(&nextelpos, sizeof(HWSize_t), 1, f);
       if (res != 1) {
         return 0;
       }
