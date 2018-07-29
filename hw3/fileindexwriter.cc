@@ -222,7 +222,7 @@ static HWSize_t WriteDocPositionListFn(FILE *f,
     LLPayload_t payload;
     LLIteratorGetPayload(it, &payload);
 
-    DocPositionOffset_t position_ho = (DocPositionOffset_t)payload;
+    DocPositionOffset_t position_ho = (int32_t)(int64_t)payload;
     // Truncate to 32 bits, then convert it to network order and write it out.
     // MISSING:
     DocPositionOffset_t position_no = htonl(position_ho);
