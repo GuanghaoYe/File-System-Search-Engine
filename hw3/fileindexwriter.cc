@@ -392,11 +392,11 @@ static HWSize_t WriteBucket(FILE *f,
     Verify333(it != nullptr);
     HWSize_t j;
     for (j = 0; j < chainlen_ho; j++) {
-      HWSize_t ellen, res,nextelposno;
+      HWSize_t ellen, res, nextelposno;
       HTKeyValue *kv;
 
       // MISSING:
-      res = fseek(f, offset + j*sizeof(nextelpos), SEEK_SET);
+      res = fseek(f, offset + j*sizeof(HWSize_t), SEEK_SET);
       if (res != 0) 
         return 0;
       
@@ -408,6 +408,8 @@ static HWSize_t WriteBucket(FILE *f,
 
       LLIteratorGetPayload(it, (LLPayload_t*)&kv);
       ellen = fn(f, nextelpos, kv);
+      if (ellen ==0) 
+        return 0;
 
       // Advance to the next element in the chain, tallying up our
       // lengths.
