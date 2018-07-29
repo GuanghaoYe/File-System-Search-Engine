@@ -58,7 +58,7 @@ QueryProcessor::~QueryProcessor() {
   itr_array_ = nullptr;
 }
 
-static vector<QueryProcessor::QueryResult>
+vector<QueryProcessor::QueryResult>
 QueryProcessor::ProcessQuerySingleIndex(const vector<string> &query,
                                            DocTableReader* doctable,
                                         IndexTableReader* indextable) {
