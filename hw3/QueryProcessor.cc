@@ -11,7 +11,7 @@
 
 #include <iostream>
 #include <algorithm>
-
+#include <utitlity>
 #include "./QueryProcessor.h"
 
 extern "C" {
@@ -58,13 +58,53 @@ QueryProcessor::~QueryProcessor() {
   itr_array_ = nullptr;
 }
 
+static vector<QueryProcessor::QueryResult>
+QueryProcessor::ProcessQuerySingleIndex(const vector<string> &query,
+                                           DocTableReader* doctable,
+                                        IndexTableReader* indextable) {
+  vector<QueryProcessor::QueryResult> result;
+  list<docid_element_header> docidlist;
+  DocIDTableReader* docidtable;
+  list<DocPositionOffset_t> ret_list;
+  docidtable = indextable->LookupWord(query[0]);
+  if (docidtable == nullptr)
+    return retval;
+  docidlist = docidtable->GetDocIDList();
+  for (HWSize_t i = 1; i < query.size(); ++i) {
+    docidtable = indextable->LookupWord(query[i]);
+    if (docidtable == nullptr)
+      return retval;
+    for(auto it = docidlist.rbegin(); it != docidlist.rend();) {
+      bool res = docidtable->LookupDocID(it->docid, &ret_list);
+      if (!res) {
+        it = docidlist.erase(it);
+      } else {
+        it->num_positions += ret_list.size();
+        it++;
+      }
+    }
+  }
+  string filename;
+  for(auto it : docidlist) {
+    Verify333(doctable->LookupDocID(it.docid, &filename));
+    result.push_back({filename, it.num_positions});
+  }
+  return result;
+}
+
+
 vector<QueryProcessor::QueryResult>
 QueryProcessor::ProcessQuery(const vector<string> &query) {
   Verify333(query.size() > 0);
   vector<QueryProcessor::QueryResult> finalresult;
-
-  // MISSING:
-
+  if (query.size() == 0) {
+    return finalresult;
+  }
+  vector<QueryProcessor::QueryResult> result;
+  for (HWSize_t i = 0; i < arraylen_; ++i) {
+    result = ProcessQuerySingleIndex(query, dtr_array_[i], itr_array_[i]);
+    finalresult.insert(finalresult.end(), result.begin(), result.end());
+  }
 
   // Sort the final results.
   std::sort(finalresult.begin(), finalresult.end());

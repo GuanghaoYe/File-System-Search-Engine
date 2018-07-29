@@ -75,6 +75,12 @@ class QueryProcessor {
  private:
   // Disable the copy constructor and assignment operator.
   DISALLOW_COPY_AND_ASSIGN(QueryProcessor);
+
+  
+  static vector<QueryResult> 
+  ProcessQuerySingleIndex(const vector<string> &query,
+                              DocTableReader* doctable,
+                              IndexTableReader* indextable);
 };
 
 }  // namespace hw3
