@@ -26,3 +26,6 @@
 
 # OS X finder files (doesn't happen on linux, but sometimes useful)
 .DS_Store
+
+# VScode files
+.vscode
