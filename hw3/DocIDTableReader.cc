@@ -56,7 +56,7 @@ bool DocIDTableReader::LookupDocID(const DocID_t &docid,
 
       // MISSING:
       std::list<DocPositionOffset_t> retval;
-      for (int i= 0; i < header.num_positions; ++i) {
+      for (HWSize_t i= 0; i < header.num_positions; ++i) {
         DocPositionOffset_t nextpos;
         res = fread(&nextpos, sizeof(nextpos), 1, file_);
         Verify333(res == 1);
