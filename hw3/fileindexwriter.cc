@@ -325,7 +325,6 @@ static HWSize_t WriteHeader(FILE *f,
     crcobj.FoldByteIntoCRC(data);
   }
   header.checksum = crcobj.GetFinalCRC();
-  header.toDiskFormat();
   // Write the header fields.  Be sure to convert the fields to
   // network order before writing them!
   header.toDiskFormat();
