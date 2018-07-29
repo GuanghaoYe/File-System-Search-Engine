@@ -91,14 +91,13 @@ list<docid_element_header> DocIDTableReader::GetDocIDList() {
     // variable stores the offset of this docid table within
     // the index file .
     // MISSING:
-
+    Verify333(fseek(file_, offset_ + sizeof(header_) + i*sizeof(bucket_rec),
+                           SEEK_SET) == 0);
 
     // Read in the chain length and bucket position fields from
     // the bucket_rec.
     bucket_rec b_rec;
     // MISSING:
-    Verify333(fseek(file_, sizeof(header_) + i*sizeof(b_rec),
-                           SEEK_SET) == 0);
     Verify333(fread(&b_rec, sizeof(b_rec), 1, file_) == 1);
     b_rec.toHostFormat();
     // Sweep through the next bucket, iterating through each
