@@ -396,7 +396,7 @@ static HWSize_t WriteBucket(FILE *f,
       HTKeyValue *kv;
 
       // MISSING:
-      res = fseek(f, offset + j*sizeof(element_position_rec), SEEK_SET);
+      res = fseek(f, offset + j*sizeof(nextelpos), SEEK_SET);
       if (res != 0) 
         return 0;
       
