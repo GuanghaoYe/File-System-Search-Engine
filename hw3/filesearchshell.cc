@@ -80,7 +80,7 @@ static void Usage(char *progname) {
 int main(int argc, char **argv) {
   if (argc < 2) Usage(argv[0]);
   std::list<string> args;
-  for(HWSize_t i = 0; i < argc; ++i) {
+  for(int i = 1; i < argc; ++i) {
     args.push_back(std::string(argv[i]));
   }
   hw3::QueryProcessor processor(args);
