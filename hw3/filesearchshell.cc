@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 #include "./QueryProcessor.h"
 
@@ -95,6 +96,7 @@ int main(int argc, char **argv) {
     }
     std::istringstream iss(line, std::istringstream::in);
     while (iss >> word) {
+      std::transform(word.begin(), word.end(), word.begin(), tolower);
       query.push_back(word);
     }
     auto result = processor.ProcessQuery(query);
