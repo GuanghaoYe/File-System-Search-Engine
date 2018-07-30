@@ -76,7 +76,10 @@ class QueryProcessor {
   // Disable the copy constructor and assignment operator.
   DISALLOW_COPY_AND_ASSIGN(QueryProcessor);
 
-  
+  // A static helper function to query on a single index files
+  // This method return a vector of QueryResults.  If no
+  // documents match the query, then a valid but empty vector will be
+  // returned.
   static vector<QueryResult> 
   ProcessQuerySingleIndex(const vector<string> &query,
                               DocTableReader* doctable,

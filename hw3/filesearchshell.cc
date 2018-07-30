@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <sstream>
 
 #include "./QueryProcessor.h"
 
@@ -78,8 +79,28 @@ static void Usage(char *progname) {
 // Good luck, and write beautiful code!
 int main(int argc, char **argv) {
   if (argc < 2) Usage(argv[0]);
-
+  std::list<string> args;
+  for(HWSize_t i = 0; i < argc; ++i) {
+    args.push_back(std::string(argv[i]));
+  }
+  hw3::QueryProcessor processor(args);
   while (1) {
+    std::cout<<"Enter query:" << std::endl;
+    vector<string> query;
+    string line;
+    string word;
+    std::getline(std::cin, line);
+    if (std::cin.eof()) {
+      break;
+    }
+    std::istringstream iss(line, std::istringstream::in);
+    while (iss >> word) {
+      query.push_back(word);
+    }
+    auto result = processor.ProcessQuery(query);
+    for(const auto &it : result) {
+      std::cout << it.document_name << " (" << it.rank << ")" << std::endl;
+    }
   }
 
   return EXIT_SUCCESS;
