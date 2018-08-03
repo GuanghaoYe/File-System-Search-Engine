@@ -25,7 +25,7 @@ HashTableReader::HashTableReader(FILE *f, IndexFileOffset_t offset)
 
   HWSize_t res;
   Verify333(fseek(f, offset, SEEK_SET) == 0);
-  res = fread(&header_, sizeof(header_),1 ,f);
+  res = fread(&header_, sizeof(header_), 1, f);
   Verify333(res == 1);
   header_.toHostFormat();
 }
@@ -73,7 +73,7 @@ HashTableReader::LookupElementPositions(HTKey_t hashKey) {
   HWSize_t bucket_num = hashKey % header_.num_buckets;
 
   // Figure out the offset of the "bucket_rec" field for this bucket.
-  IndexFileOffset_t bucketrec_offset =   offset_ 
+  IndexFileOffset_t bucketrec_offset =   offset_
                                        + sizeof(BucketListHeader)
                                        + sizeof(bucket_rec) * bucket_num;
 

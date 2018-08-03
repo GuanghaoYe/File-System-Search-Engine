@@ -81,12 +81,12 @@ static void Usage(char *progname) {
 int main(int argc, char **argv) {
   if (argc < 2) Usage(argv[0]);
   std::list<string> args;
-  for(int i = 1; i < argc; ++i) {
+  for (int i = 1; i < argc; ++i) {
     args.push_back(std::string(argv[i]));
   }
   hw3::QueryProcessor processor(args);
   while (1) {
-    std::cout<<"Enter query:" << std::endl;
+    std::cout << "Enter query:" << std::endl;
     vector<string> query;
     string line;
     string word;
@@ -100,8 +100,13 @@ int main(int argc, char **argv) {
       query.push_back(word);
     }
     auto result = processor.ProcessQuery(query);
-    for(const auto &it : result) {
-      std::cout << it.document_name << " (" << it.rank << ")" << std::endl;
+    if (result.size() == 0) {
+      std::cout << "  [no results]" << std::endl;
+    } else {
+      for (const auto &it : result) {
+        std::cout << "  " << it.document_name
+                  << " (" << it.rank << ")" << std::endl;
+      }
     }
   }
 

@@ -74,7 +74,7 @@ QueryProcessor::ProcessQuerySingleIndex(const vector<string> &query,
     docidtable = indextable->LookupWord(query[i]);
     if (docidtable == nullptr)
       return result;
-    for(auto it = docidlist.begin(); it != docidlist.end();) {
+    for (auto it = docidlist.begin(); it != docidlist.end();) {
       bool res = docidtable->LookupDocID(it->docid, &ret_list);
       if (!res) {
         it = docidlist.erase(it);
@@ -85,7 +85,7 @@ QueryProcessor::ProcessQuerySingleIndex(const vector<string> &query,
     }
   }
   string filename;
-  for(auto it : docidlist) {
+  for (auto it : docidlist) {
     Verify333(doctable->LookupDocID(it.docid, &filename));
     result.push_back({filename, it.num_positions});
   }

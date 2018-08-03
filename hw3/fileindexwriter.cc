@@ -148,7 +148,7 @@ static HWSize_t WriteDocidDocnameFn(FILE *f,
   // determine the filename length
   // MISSING (change this assignment to the correct thing):
 
-  filename = (char *)kv->value;
+  filename = reinterpret_cast<char *>(kv->value);
   slen_ho = strlen(filename);
 
   // fwrite() the docid from "kv".  Remember to convert to
@@ -219,12 +219,13 @@ static HWSize_t WriteDocPositionListFn(FILE *f,
   for (i = 0; i < num_pos_ho; i++) {
     // Get the next position from the list.
     // MISSING
-    LLIteratorGetPayload(it, (LLPayload_t *)&position.position);
+    LLIteratorGetPayload(it,
+      reinterpret_cast<LLPayload_t *>(&position.position));
     // Truncate to 32 bits, then convert it to network order and write it out.
     // MISSING:
     position.toDiskFormat();
     res = fwrite(&position, sizeof(DocPositionOffset_t), 1, f);
-    if (res != 1) 
+    if (res != 1)
       return 0;
     // Iterate to the next position.
     LLIteratorNext(it);
@@ -257,7 +258,8 @@ static HWSize_t WriteWordDocSetFn(FILE *f,
   // WriteDocPositionListFn helper function as the final parameter.
   HWSize_t htlen_ho = WriteHashTable(f,
                                      wds->docIDs,
-                                     offset + sizeof(worddocset_header) + wordlen_ho,
+                                     offset + sizeof(worddocset_header) +
+                                     wordlen_ho,
                                      &WriteDocPositionListFn);
 
   // Write the header, in network order, in the right
@@ -316,8 +318,8 @@ static HWSize_t WriteHeader(FILE *f,
   if (fseek(f, offset, SEEK_SET) != 0)
     return 0;
   uint8_t data;
-  for(HWSize_t i = 0; i < cslen; ++i) {
-    if (fread(&data,sizeof(uint8_t), 1, f) != 1)
+  for (HWSize_t i = 0; i < cslen; ++i) {
+    if (fread(&data, sizeof(uint8_t), 1, f) != 1)
       return 0;
     crcobj.FoldByteIntoCRC(data);
   }
@@ -397,18 +399,18 @@ static HWSize_t WriteBucket(FILE *f,
 
       // MISSING:
       res = fseek(f, offset + j*sizeof(HWSize_t), SEEK_SET);
-      if (res != 0) 
+      if (res != 0)
         return 0;
-      
       nextelposno = htonl(nextelpos);
       res = fwrite(&nextelposno, sizeof(HWSize_t), 1, f);
       if (res != 1) {
         return 0;
       }
 
-      LLIteratorGetPayload(it, (LLPayload_t*)&kv);
+      LLIteratorGetPayload(it,
+        reinterpret_cast<LLPayload_t*>(&kv));
       ellen = fn(f, nextelpos, kv);
-      if (ellen ==0) 
+      if (ellen ==0)
         return 0;
 
       // Advance to the next element in the chain, tallying up our
@@ -463,15 +465,15 @@ static HWSize_t WriteHashTable(FILE *f,
   // empty.  For that case, you still have to write a "bucket_rec"
   // record for the bucket, but you won't write a "bucket".
   for (i = 0; i < ht->num_buckets; i++) {
-    res = WriteBucketRecord(f, ht->buckets[i], next_bucket_rec_offset, 
+    res = WriteBucketRecord(f, ht->buckets[i], next_bucket_rec_offset,
                               next_bucket_offset);
-    if (res == 0) 
+    if (res == 0)
       return 0;
     next_bucket_rec_offset += res;
-    if (NumElementsInLinkedList(ht->buckets[i]) == 0) 
+    if (NumElementsInLinkedList(ht->buckets[i]) == 0)
       continue;
     res = WriteBucket(f, ht->buckets[i], next_bucket_offset, fn);
-    if (res == 0) 
+    if (res == 0)
       return 0;
     next_bucket_offset += res;
   }
