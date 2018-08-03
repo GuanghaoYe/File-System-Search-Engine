@@ -12,6 +12,7 @@
 #include <iostream>
 #include <algorithm>
 #include <utility>
+#include <memory>
 #include "./QueryProcessor.h"
 
 extern "C" {
@@ -64,14 +65,15 @@ QueryProcessor::ProcessQuerySingleIndex(const vector<string> &query,
                                         IndexTableReader* indextable) {
   vector<QueryProcessor::QueryResult> result;
   list<docid_element_header> docidlist;
-  DocIDTableReader* docidtable;
+  std::unique_ptr<DocIDTableReader>
+    docidtable(indextable->LookupWord(query[0]));
   list<DocPositionOffset_t> ret_list;
-  docidtable = indextable->LookupWord(query[0]);
   if (docidtable == nullptr)
     return result;
   docidlist = docidtable->GetDocIDList();
   for (HWSize_t i = 1; i < query.size(); ++i) {
-    docidtable = indextable->LookupWord(query[i]);
+    docidtable = std::move(std::unique_ptr<DocIDTableReader>
+      (indextable->LookupWord(query[i])));
     if (docidtable == nullptr)
       return result;
     for (auto it = docidlist.begin(); it != docidlist.end();) {
