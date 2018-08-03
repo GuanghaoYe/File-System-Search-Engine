@@ -1,0 +1,26 @@
+HW2 Feedback
+
+
+Test Suite: 270/270
+
+
+Valgrind: 5/5
+
+
+Modularity: 5/5
+
+
+Blending with starter code: 5/5
+
+
+Robustness and error checking: 5/5
+
+
+Comments and other style issues: 4/5
+(-1) Provide comments for helper functions in searchshell.c.
+
+Search shell: 5/5
+
+
+Extra credit: 2/5
++2 for stop words filter.
