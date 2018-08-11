@@ -133,8 +133,6 @@ bool GetNetInfo(int fd, sockaddr *addr, size_t addrlen,
   } else if (addr->sa_family == AF_INET6) {
     // IPv6
     char astring[INET6_ADDRSTRLEN];
-    sockaddr_in srvr;
-    socklen_t srvrlen = sizeof(srvr);
     sockaddr_in6 *in6 = reinterpret_cast<sockaddr_in6 *>(addr);
     inet_ntop(AF_INET6, &(in6->sin6_addr), astring, INET6_ADDRSTRLEN);
     *client_addr = astring;
@@ -182,7 +180,7 @@ bool ServerSocket::Accept(int *accepted_fd,
                           reinterpret_cast<sockaddr *>(&caddr), 
                           &caddr_len);
   } while((*accepted_fd < 0) &&
-         (errno == EINTR) || (errno =EAGAIN) || (errno == EWOULDBLOCK));
+         ((errno == EINTR) || (errno =EAGAIN) || (errno == EWOULDBLOCK)));
   if (*accepted_fd < 0) {
     std::cerr << "Failure on accept " << strerror(errno) << std::endl;
     return false;
