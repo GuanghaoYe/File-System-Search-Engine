@@ -54,7 +54,7 @@ bool HttpConnection::GetNextRequest(HttpRequest *request) {
   if (pos == std::string::npos)
     return true;
   else {
-    ParseRequest(pos + 4);
+    *request = ParseRequest(pos + 4);
     buffer_ = buffer_.substr(pos + 4);
   }
   return true;
