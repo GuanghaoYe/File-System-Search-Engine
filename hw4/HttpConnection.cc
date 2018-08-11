@@ -25,6 +25,8 @@ using std::string;
 
 namespace hw4 {
 
+const int BUFSIZE = 1024;
+
 bool HttpConnection::GetNextRequest(HttpRequest *request) {
   // Use "WrappedRead" to read data into the buffer_
   // instance variable.  Keep reading data until either the
@@ -40,8 +42,21 @@ bool HttpConnection::GetNextRequest(HttpRequest *request) {
   // caller invokes GetNextRequest()!
 
   // MISSING:
-
-
+  char buf[BUFSIZE];
+  int len = 0;
+  do{
+    len = WrappedRead(fd_, reinterpret_cast<unsigned char*>(buf), BUFSIZE);
+    if (len < 0)
+      return false;
+    buffer_.append(buf, len);
+  while(len > 0 && (buffer_.find("\r\n\r\n") == -1));
+  int pos = buffer_.find("\r\n\r\n");
+  if (pos == -1)
+    return true;
+  else {
+    ParseRequest(pos + 4);
+    buffer_ = buffer_.substr(pos + 4);
+  }
   return true;
 }
 
@@ -75,6 +90,18 @@ HttpRequest HttpConnection::ParseRequest(size_t end) {
   // to lowercase.
 
   // MISSING:
+  vector<string> lines;
+  boost::split(lines, str, is_any_of("\r\n"), token_compress_on);
+  vector<string> tokens;
+  boost::split(tokens, lines[0], is_any_of(" "), token_compress_on);
+  req.URI = tokens[1];
+  for (int i = 1; i < lines.size(); ++i) {
+    tokens.clear();
+    boost::split(tokens, lines[i], is_any_of(":"), token_compress_on);
+    for (int i = 0; i < tokens.size(); ++i)
+      boost::algorithm::trim(tokens[i]);
+    req.headers[boost::algorithm::to_lower_copy(tokens[0])] = tokens[1];
+  }
 
 
   return req;
