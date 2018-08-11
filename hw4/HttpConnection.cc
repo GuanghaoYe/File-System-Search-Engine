@@ -43,13 +43,13 @@ bool HttpConnection::GetNextRequest(HttpRequest *request) {
 
   // MISSING:
   unsigned char buf[BUFSIZE];
-  int len = 0;
-  do{
+  int len = 1;
+  while(len > 0 && (buffer_.find("\r\n\r\n") == std::string::npos)) {
     len = WrappedRead(fd_, buf, BUFSIZE);
     if (len < 0)
       return false;
     buffer_.append(reinterpret_cast<char *>(buf), len);
-  } while(len > 0 && (buffer_.find("\r\n\r\n") == std::string::npos));
+  } 
   int pos = buffer_.find("\r\n\r\n");
   if (pos == std::string::npos)
     return true;
