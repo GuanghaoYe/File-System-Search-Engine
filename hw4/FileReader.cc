@@ -41,8 +41,12 @@ bool FileReader::ReadFile(std::string *str) {
   // HttpUtils.h above the MallocDeleter class for details.
 
   // MISSING:
-
-
+  HWSize_t size;
+  char* content = ReadFile(fullfile, &size);
+  if (content == nullptr)
+    return false;
+  *str = string(content, size);
+  free(content);
   return true;
 }
 
