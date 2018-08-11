@@ -42,7 +42,7 @@ bool FileReader::ReadFile(std::string *str) {
 
   // MISSING:
   HWSize_t size;
-  char* content = ReadFile(fullfile, &size);
+  char* content = ::ReadFile(fullfile.c_str(), &size);
   if (content == nullptr)
     return false;
   *str = string(content, size);
