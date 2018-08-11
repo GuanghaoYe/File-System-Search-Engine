@@ -42,16 +42,16 @@ bool HttpConnection::GetNextRequest(HttpRequest *request) {
   // caller invokes GetNextRequest()!
 
   // MISSING:
-  char buf[BUFSIZE];
+  unsigned char buf[BUFSIZE];
   int len = 0;
   do{
-    len = WrappedRead(fd_, reinterpret_cast<unsigned char*>(buf), BUFSIZE);
+    len = WrappedRead(fd_, buf, BUFSIZE);
     if (len < 0)
       return false;
-    buffer_.append(buf, len);
-  while(len > 0 && (buffer_.find("\r\n\r\n") == -1));
+    buffer_.append(reinterpret_cast<char *>(buf), len);
+  } while(len > 0 && (buffer_.find("\r\n\r\n") == std::string::npos));
   int pos = buffer_.find("\r\n\r\n");
-  if (pos == -1)
+  if (pos == std::string::npos)
     return true;
   else {
     ParseRequest(pos + 4);
@@ -90,17 +90,20 @@ HttpRequest HttpConnection::ParseRequest(size_t end) {
   // to lowercase.
 
   // MISSING:
-  vector<string> lines;
-  boost::split(lines, str, is_any_of("\r\n"), token_compress_on);
-  vector<string> tokens;
-  boost::split(tokens, lines[0], is_any_of(" "), token_compress_on);
+  std::vector<string> lines;
+  boost::split(lines, str, boost::is_any_of("\r\n"), boost::token_compress_on);
+  std::vector<string> tokens;
+  boost::split(tokens, lines[0], boost::is_any_of(" "));
   req.URI = tokens[1];
-  for (int i = 1; i < lines.size(); ++i) {
+  for (size_t i = 1; i < lines.size(); ++i) {
+    if (lines[i].size() == 0)
+      continue;
     tokens.clear();
-    boost::split(tokens, lines[i], is_any_of(":"), token_compress_on);
-    for (int i = 0; i < tokens.size(); ++i)
-      boost::algorithm::trim(tokens[i]);
-    req.headers[boost::algorithm::to_lower_copy(tokens[0])] = tokens[1];
+    boost::split(tokens, lines[i], boost::is_any_of(":"));
+    for (size_t j = 0; j < tokens.size(); ++j)
+      boost::algorithm::trim(tokens[j]);
+      boost::to_lower(tokens[0]);
+      req.headers[tokens[0]] = tokens[1];
   }
 
 
