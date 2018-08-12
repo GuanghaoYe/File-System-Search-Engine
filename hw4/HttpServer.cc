@@ -96,13 +96,19 @@ void HttpServer_ThrFn(ThreadPool::Task *t) {
 
     // MISSING:
     HttpRequest request;
-    connection.GetNextRequest(&request);
+    if(!connection.GetNextRequest(&request)) {
+      close(hst->client_fd);
+      done = true;
+    }
     if (request.headers["Connection"] == "close") {
       close(hst->client_fd);
       done = true;
     }
     HttpResponse response =  ProcessRequest(request, hst->basedir, hst->indices);
-    connection.WriteResponse(response);
+    if(!connection.WriteResponse(response)) {
+      done =true;
+      close(hst->client_fd);
+    }
   }
 }
 
