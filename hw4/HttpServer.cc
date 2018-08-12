@@ -384,21 +384,21 @@ HttpResponse ProcessQueryRequest(const std::string &uri,
   //    in our solution_binaries/http333d.
 
   // MISSING:
-  string logoHtml = "<html><head><title>333gle</title></head>\n"+
-            "<body>\n"+
-            "<center style=\"font-size:500%;\">\n"+
-            "<span style=\"position:relative;bottom:-0.33em;color:orange;\">3"+
-            "</span><span style=\"color:red;\">3</span><span style=\"color:"+
-            "gold;\">3</span><span style=\"color:blue;\">g</span><span style"+
-            "=\"color:green;\">l</span><span style=\"color:red;\">e</span>\n"+
-            "</center>\n"+
-            "<p>\n"+
-            "<div style=\"height:20px;\"></div>\n"+
-            "<center>\n"+
-            "<form action=\"/query\" method=\"get\">\n"+
-            "<input type=\"text\" size=30 name=\"terms\" />\n"+
-            "<input type=\"submit\" value=\"Search\" />\n"+
-            "</form>\n"+
+  string logoHtml = "<html><head><title>333gle</title></head>\n"\
+            "<body>\n"\
+            "<center style=\"font-size:500%;\">\n"\
+            "<span style=\"position:relative;bottom:-0.33em;color:orange;\">3"\
+            "</span><span style=\"color:red;\">3</span><span style=\"color:"\
+            "gold;\">3</span><span style=\"color:blue;\">g</span><span style"\
+            "=\"color:green;\">l</span><span style=\"color:red;\">e</span>\n"\
+            "</center>\n"\
+            "<p>\n"\
+            "<div style=\"height:20px;\"></div>\n"\
+            "<center>\n"\
+            "<form action=\"/query\" method=\"get\">\n"\
+            "<input type=\"text\" size=30 name=\"terms\" />\n"\
+            "<input type=\"submit\" value=\"Search\" />\n"\
+            "</form>\n"\
             "</center><p>\n";
   ret.body += logoHtml;
   URLParser parser;
