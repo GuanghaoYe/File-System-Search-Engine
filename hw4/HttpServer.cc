@@ -86,6 +86,7 @@ void HttpServer_ThrFn(ThreadPool::Task *t) {
        << "(IP address " << hst->caddr << ")" << " connected." << endl;
 
   bool done = false;
+  HttpConnection connection(hst->client_fd);
   while (!done) {
     // Use the HttpConnection class to read in the next request from
     // this client, process it by invoking ProcessRequest(), and then
@@ -94,6 +95,14 @@ void HttpServer_ThrFn(ThreadPool::Task *t) {
     // the connection.
 
     // MISSING:
+    HttpRequest request;
+    connection.GetNextRequest(&request);
+    if (request.headers["Connection"] == "close") {
+      close(hst->client_fd);
+      done = true;
+    }
+    HttpResponse response =  ProcessRequest(request, basedir, indicies);
+    connection.WriteResponse(response);
   }
 }
 
@@ -109,6 +118,186 @@ HttpResponse ProcessRequest(const HttpRequest &req,
   return ProcessQueryRequest(req.URI, indices);
 }
 
+
+std::string getContentType(std::string suffix) {
+  map<string, string> suffixMap = {
+    {"ac3","audio/ac3"},
+    {"amr","audio/AMR"},
+    {"awb","audio/AMR-WB"},
+    {"acn","audio/asc"},
+    {"atx","audio/ATRAC-X"},
+    {"at3","audio/ATRAC3"},
+    {"aa3","audio/ATRAC3"},
+    {"omg","audio/ATRAC3"},
+    {"au","audio/basic"},
+    {"snd","audio/basic"},
+    {"dls","audio/dls"},
+    {"evc","audio/EVRC"},
+    {"evb","audio/EVRCB"},
+    {"enw","audio/EVRCNW"},
+    {"evw","audio/EVRCWB"},
+    {"lbc","audio/iLBC"},
+    {"l16","audio/L16"},
+    {"m4a","audio/mp4"},
+    {"mp3","audio/mpeg"},
+    {"mpga","audio/mpeg"},
+    {"mp1","audio/mpeg"},
+    {"mp2","audio/mpeg"},
+    {"oga","audio/ogg"},
+    {"ogg","audio/ogg"},
+    {"opus","audio/ogg"},
+    {"spx","audio/ogg"},
+    {"sid","audio/prs.sid"},
+    {"psid","audio/prs.sid"},
+    {"qcp","audio/qcelp"},
+    {"smv","audio/SMV"},
+    {"dts","audio/vnd.dts"},
+    {"rip","audio/vnd.rip"},
+    {"otf","font/otf"},
+    {"ttf","font/ttf"},
+    {"woff","font/woff"},
+    {"woff2","font/woff2"},
+    {"bmp","image/bmp"},
+    {"dib","image/bmp"},
+    {"cgm","image/cgm"},
+    {"emf","image/emf"},
+    {"fits","image/fits"},
+    {"fit","image/fits"},
+    {"fts","image/fits"},
+    {"gif","image/gif"},
+    {"ief","image/ief"},
+    {"jls","image/jls"},
+    {"jp2","image/jp2"},
+    {"jpg2","image/jp2"},
+    {"jpg","image/jpeg"},
+    {"jpeg","image/jpeg"},
+    {"jpe","image/jpeg"},
+    {"jfif","image/jpeg"},
+    {"jpm","image/jpm"},
+    {"jpgm","image/jpm"},
+    {"jpx","image/jpx"},
+    {"jpf","image/jpx"},
+    {"ktx","image/ktx"},
+    {"png","image/png"},
+    {"pti","image/prs.pti"},
+    {"svg","image/svg+xml"},
+    {"svgz","image/svg+xml"},
+    {"t38","image/t38"},
+    {"tiff","image/tiff"},
+    {"tif","image/tiff"},
+    {"tfx","image/tiff-fx"},
+    {"dwg","image/vnd.dwg"},
+    {"dxf","image/vnd.dxf"},
+    {"fpx","image/vnd.fpx"},
+    {"fst","image/vnd.fst"},
+    {"wmf","image/wmf"},
+    {"igs","model/iges"},
+    {"iges","model/iges"},
+    {"msh","model/mesh"},
+    {"mesh","model/mesh"},
+    {"silo","model/mesh"},
+    {"dwf","model/vnd.dwf"},
+    {"gdl","model/vnd.gdl"},
+    {"gsm","model/vnd.gdl"},
+    {"win","model/vnd.gdl"},
+    {"dor","model/vnd.gdl"},
+    {"lmp","model/vnd.gdl"},
+    {"rsm","model/vnd.gdl"},
+    {"msm","model/vnd.gdl"},
+    {"ism","model/vnd.gdl"},
+    {"gtw","model/vnd.gtw"},
+    {"mts","model/vnd.mts"},
+    {"vtu","model/vnd.vtu"},
+    {"wrl","model/vrml"},
+    {"vrml","model/vrml"},
+    {"x3db","model/x3d+xml"},
+    {"ics","text/calendar"},
+    {"ifb","text/calendar"},
+    {"css","text/css"},
+    {"csv","text/csv"},
+    {"soa","text/dns"},
+    {"zone","text/dns"},
+    {"html","text/html"},
+    {"htm","text/html"},
+    {"cnd","text/jcr-cnd"},
+    {"markdown","text/markdown"},
+    {"md","text/markdown"},
+    {"miz","text/mizar"},
+    {"n3","text/n3"},
+    {"txt","text/plain"},
+    {"asc","text/plain"},
+    {"text","text/plain"},
+    {"pm","text/plain"},
+    {"el","text/plain"},
+    {"c","text/plain"},
+    {"h","text/plain"},
+    {"cc","text/plain"},
+    {"hh","text/plain"},
+    {"cxx","text/plain"},
+    {"hxx","text/plain"},
+    {"f90","text/plain"},
+    {"conf","text/plain"},
+    {"log","text/plain"},
+    {"rtx","text/richtext"},
+    {"sgml","text/sgml"},
+    {"sgm","text/sgml"},
+    {"t","text/troff"},
+    {"tr","text/troff"},
+    {"roff","text/troff"},
+    {"ttl","text/turtle"},
+    {"uris","text/uri-list"},
+    {"uri","text/uri-list"},
+    {"vcf","text/vcard"},
+    {"vcard","text/vcard"},
+    {"a","text/vnd.a"},
+    {"abc","text/vnd.abc"},
+    {"fly","text/vnd.fly"},
+    {"xml","text/xml"},
+    {"xsd","text/xml"},
+    {"rng","text/xml"},
+    {"3gp","video/3gpp"},
+    {"3gpp","video/3gpp"},
+    {"3g2","video/3gpp2"},
+    {"3gpp2","video/3gpp2"},
+    {"mj2","video/mj2"},
+    {"mjp2","video/mj2"},
+    {"mp4","video/mp4"},
+    {"mpg4","video/mp4"},
+    {"m4v","video/mp4"},
+    {"mpeg","video/mpeg"},
+    {"mpg","video/mpeg"},
+    {"mpe","video/mpeg"},
+    {"m1v","video/mpeg"},
+    {"m2v","video/mpeg"},
+    {"ogv","video/ogg"},
+    {"fvt","video/vnd.fvt"},
+    {"mid","audio/midi"},
+    {"midi","audio/midi"},
+    {"kar","audio/midi"},
+    {"aif","audio/x-aiff"},
+    {"aiff","audio/x-aiff"},
+    {"aifc","audio/x-aiff"},
+    {"flac","audio/x-flac"},
+    {"mod","audio/x-mod"},
+    {"ult","audio/x-mod"},
+    {"uni","audio/x-mod"},
+    {"m15","audio/x-mod"},
+    {"mtm","audio/x-mod"},
+    {"669","audio/x-mod"},
+    {"med","audio/x-mod"},
+    {"s3m","audio/x-s3m"},
+    {"stm","audio/x-stm"},
+    {"wav","audio/x-wav"},
+    {"webp","image/webp"},
+    {"rgb","image/x-rgb"},
+    {"tga","image/x-targa"},
+    {"pod","text/x-pod"},
+    {"etx","text/x-setext"},
+    {"webm","video/webm"},
+    {"flv","video/x-flv"},
+  };
+  return suffixMap[suffix];
+}
 
 HttpResponse ProcessFileRequest(const std::string &uri,
                                 const std::string &basedir) {
@@ -135,9 +324,19 @@ HttpResponse ProcessFileRequest(const std::string &uri,
   std::string fname = "";
 
   // MISSING:
-
-
-
+  URLParser parser;
+  parser.Parse(uri);
+  fname = parser.get_path();
+  fname = fname.substr(8);
+  FileReader reader(basedir, fname);
+  if (reader.ReadFile(&ret.body)) {
+    ret.protocol = "HTTP/1.1";
+    ret.message = "OK";
+    ret.response_code = 200;
+    string suffix = fname.substr(fname.rfind("."), fname.length()-1);
+    ret.headers["content-type"] = getType(suffix);
+    return ret;
+  }
   // If you couldn't find the file, return an HTTP 404 error.
   ret.protocol = "HTTP/1.1";
   ret.response_code = 404;
@@ -146,6 +345,16 @@ HttpResponse ProcessFileRequest(const std::string &uri,
   ret.body +=  EscapeHTML(fname);
   ret.body += "\"</body></html>";
   return ret;
+}
+
+std::string getItemHtml(hw3::QueryProcessor::QueryResult result) {
+  char buf[1024];
+  snprintf(buf, sizeof(buf), 
+    "<li> <a href=\"/static/%s\">%s</a> [%d]<br></li>\n",
+    result.document_name,
+    result.document_name,
+    result.rank);
+  return std::string(buf);
 }
 
 HttpResponse ProcessQueryRequest(const std::string &uri,
@@ -175,8 +384,38 @@ HttpResponse ProcessQueryRequest(const std::string &uri,
   //    in our solution_binaries/http333d.
 
   // MISSING:
-
-
+  string logoHtml = "<html><head><title>333gle</title></head>\n"+
+            "<body>\n"+
+            "<center style=\"font-size:500%;\">\n"+
+            "<span style=\"position:relative;bottom:-0.33em;color:orange;\">3"+
+            "</span><span style=\"color:red;\">3</span><span style=\"color:"+
+            "gold;\">3</span><span style=\"color:blue;\">g</span><span style"+
+            "=\"color:green;\">l</span><span style=\"color:red;\">e</span>\n"+
+            "</center>\n"+
+            "<p>\n"+
+            "<div style=\"height:20px;\"></div>\n"+
+            "<center>\n"+
+            "<form action=\"/query\" method=\"get\">\n"+
+            "<input type=\"text\" size=30 name=\"terms\" />\n"+
+            "<input type=\"submit\" value=\"Search\" />\n"+
+            "</form>\n"+
+            "</center><p>\n";
+  ret.body += logoHtml;
+  URLParser parser;
+  parser.Parser(uri);
+  std::string query = parser.get_args()["terms"];
+  boost::trim(query);
+  boost::to_lower(query);
+  vector<string> tokens;
+  boost::split(tokens, query, boost::is_any_of(" "),boost::token_compress_on);
+  hw3::QueryProcessor processor(*indicies);
+  vector<auto> results = processor.ProcessQuery(tokens);
+  ret.body += "<p><br>" + to_string(results.size()) + "results found for<b>" +
+              query + "</b> </p> + <p></p>\n<ul>";
+  for(auto result: results) {
+    ret.body += getItemHtml(result);
+  }
+  ret.body += "</ul></body>\n" + "</html>\n";
   return ret;
 }
 
