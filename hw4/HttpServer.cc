@@ -101,7 +101,7 @@ void HttpServer_ThrFn(ThreadPool::Task *t) {
       close(hst->client_fd);
       done = true;
     }
-    HttpResponse response =  ProcessRequest(request, basedir, indicies);
+    HttpResponse response =  ProcessRequest(request, hst->basedir, hst->indicies);
     connection.WriteResponse(response);
   }
 }
@@ -402,14 +402,15 @@ HttpResponse ProcessQueryRequest(const std::string &uri,
             "</center><p>\n";
   ret.body += logoHtml;
   URLParser parser;
-  parser.Parser(uri);
+  parser.Parse(uri);
   std::string query = parser.get_args()["terms"];
   boost::trim(query);
   boost::to_lower(query);
   vector<string> tokens;
   boost::split(tokens, query, boost::is_any_of(" "),boost::token_compress_on);
-  hw3::QueryProcessor processor(*indicies);
-  vector<auto> results = processor.ProcessQuery(tokens);
+  hw3::QueryProcessor processor(*indices);
+  vector<hw3::QueryProcessor::QueryResult> results =
+    processor.ProcessQuery(tokens);
   ret.body += "<p><br>" + to_string(results.size()) + "results found for<b>" +
               query + "</b> </p> + <p></p>\n<ul>";
   for(auto result: results) {
