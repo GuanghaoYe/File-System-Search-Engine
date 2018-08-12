@@ -19,6 +19,7 @@
 #include <cstdio>
 #include <iostream>
 #include <list>
+#include <fstream>
 
 #include "./ServerSocket.h"
 #include "./HttpServer.h"
@@ -106,10 +107,10 @@ void GetPortAndPath(int argc,
     std::string index(argv[i]);
     std::ifstream input (index.c_str());
     if (input.good()) {
-      *indices.push_back(index);
+      indices->push_back(index);
     }
   }
-  if (*indices.empty()) {
+  if (indices->empty()) {
     Usage(argv[0]);
   }
 }
