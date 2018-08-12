@@ -421,8 +421,8 @@ HttpResponse ProcessQueryRequest(const std::string &uri,
   if(!query.empty())
     ret.body += "<p><br>" + 
                 (results.size() == 0 ? 
-                  std::string( "No") : std::to_string(results.size())) + 
-                (results.size()==1 ? " result" : " results") \ 
+                  std::string("No") : std::to_string(results.size())) + 
+                std::string(results.size() == 1 ? " result" : " results") +
                 " found for<b> " +
               query + "</b> </p>  <p></p>\n<ul>";
   for(auto result: results) {
