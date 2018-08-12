@@ -101,7 +101,7 @@ void HttpServer_ThrFn(ThreadPool::Task *t) {
       close(hst->client_fd);
       done = true;
     }
-    HttpResponse response =  ProcessRequest(request, hst->basedir, hst->indicies);
+    HttpResponse response =  ProcessRequest(request, hst->basedir, hst->indices);
     connection.WriteResponse(response);
   }
 }
@@ -334,7 +334,7 @@ HttpResponse ProcessFileRequest(const std::string &uri,
     ret.message = "OK";
     ret.response_code = 200;
     string suffix = fname.substr(fname.rfind("."), fname.length()-1);
-    ret.headers["content-type"] = getType(suffix);
+    ret.headers["content-type"] = getContentType(suffix);
     return ret;
   }
   // If you couldn't find the file, return an HTTP 404 error.
@@ -411,12 +411,12 @@ HttpResponse ProcessQueryRequest(const std::string &uri,
   hw3::QueryProcessor processor(*indices);
   vector<hw3::QueryProcessor::QueryResult> results =
     processor.ProcessQuery(tokens);
-  ret.body += "<p><br>" + to_string(results.size()) + "results found for<b>" +
+  ret.body += "<p><br>" + std::to_string(results.size()) + "results found for<b>" +
               query + "</b> </p> + <p></p>\n<ul>";
   for(auto result: results) {
     ret.body += getItemHtml(result);
   }
-  ret.body += "</ul></body>\n" + "</html>\n";
+  ret.body += "</ul></body>\n" + std::string("</html>\n");
   return ret;
 }
 

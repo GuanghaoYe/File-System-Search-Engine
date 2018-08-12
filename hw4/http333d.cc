@@ -92,7 +92,25 @@ void GetPortAndPath(int argc,
   //  (c) that "path" (i.e., argv[2]) is a readable directory
   //  (d) that you have at least one index, and that all indices
   //      are readable files.
-
-  // MISSING:
+  if (argc < 4) {
+    Usage(argv[0]);
+  }
+  if (sscanf(argv[1], "%hu", port) != 1 || *port < 1024) {
+    Usage(argv[0]);
+  }
+  struct stat filestat;
+  if(stat(argv[2], &filestat) != 0 || (!filestat.st_mode & S_IFDIR)) {
+    Usage(argv[0]);
+  }
+  for (int i = 3; i <argc; ++i) {
+    std::string index(argv[i]);
+    std::ifstream input (index.c_str());
+    if (input.good()) {
+      *indices.push_back(index);
+    }
+  }
+  if (*indices.empty()) {
+    Usage(argv[0]);
+  }
 }
 
