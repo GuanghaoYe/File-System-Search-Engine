@@ -418,7 +418,11 @@ HttpResponse ProcessQueryRequest(const std::string &uri,
   hw3::QueryProcessor processor(*indices);
   vector<hw3::QueryProcessor::QueryResult> results =
     processor.ProcessQuery(tokens);
-  ret.body += "<p><br>" + std::to_string(results.size()) + " results found for<b> " +
+  if(!query.empty())
+    ret.body += "<p><br>" + 
+                std::to_string(results.size() == 0 ? "No" : results.size()) + 
+                (results.size()==1 ? " result" : " results") \ 
+                " found for<b> " +
               query + "</b> </p>  <p></p>\n<ul>";
   for(auto result: results) {
     ret.body += getItemHtml(result);
