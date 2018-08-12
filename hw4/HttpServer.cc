@@ -334,6 +334,15 @@ HttpResponse ProcessFileRequest(const std::string &uri,
   parser.Parse(uri);
   fname = parser.get_path();
   fname = fname.substr(8);
+  if (!IsPathSafe(basedir, fname)) {
+    ret.protocol = "HTTP/1.1";
+    ret.response_code = 403;
+    ret.message = "Forbidden";
+    ret.body = "<html><body>You don't have permission to access \"";
+    ret.body +=  EscapeHTML(fname);
+    ret.body += "\"</body></html>";
+    return ret;
+  }
   FileReader reader(basedir, fname);
   if (reader.ReadFile(&ret.body)) {
     ret.protocol = "HTTP/1.1";
