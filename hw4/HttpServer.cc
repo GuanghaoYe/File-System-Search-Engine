@@ -423,6 +423,9 @@ HttpResponse ProcessQueryRequest(const std::string &uri,
     ret.body += getItemHtml(result);
   }
   ret.body += "</ul></body>\n" + std::string("</html>\n");
+  ret.protocol = "HTTP/1.1";
+  ret.message = "OK";
+  ret.response_code = 200;
   return ret;
 }
 
