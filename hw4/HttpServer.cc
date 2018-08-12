@@ -420,7 +420,8 @@ HttpResponse ProcessQueryRequest(const std::string &uri,
     processor.ProcessQuery(tokens);
   if(!query.empty())
     ret.body += "<p><br>" + 
-                std::to_string(results.size() == 0 ? "No" : results.size()) + 
+                (results.size() == 0 ? 
+                  std::string( "No") : std::to_string(results.size())) + 
                 (results.size()==1 ? " result" : " results") \ 
                 " found for<b> " +
               query + "</b> </p>  <p></p>\n<ul>";
