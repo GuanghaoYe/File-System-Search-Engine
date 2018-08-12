@@ -409,8 +409,8 @@ HttpResponse ProcessQueryRequest(const std::string &uri,
             "</center><p>\n";
   ret.body += logoHtml;
   URLParser parser;
-  uri = EscapeHTML(uri);
-  parser.Parse(uri);
+  std::string escaped = EscapeHTML(uri); 
+  parser.Parse(escaped);
   std::string query = parser.get_args()["terms"];
   boost::trim(query);
   boost::to_lower(query);
