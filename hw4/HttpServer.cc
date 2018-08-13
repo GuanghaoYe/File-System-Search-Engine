@@ -365,11 +365,20 @@ HttpResponse ProcessFileRequest(const std::string &uri,
 std::string getItemHtml(hw3::QueryProcessor::QueryResult result) {
   char buf[1024];
   memset(buf, 0, sizeof buf);
-  snprintf(buf, sizeof(buf), 
+  if(result.document_name.substr(0,4) == "http") {
+    snprintf(buf, sizeof(buf), 
+    "<li> <a href=\"%s\">%s</a> [%d]<br></li>\n",
+    result.document_name.c_str(),
+    result.document_name.c_str(),
+    result.rank);
+  } else {
+    snprintf(buf, sizeof(buf), 
     "<li> <a href=\"/static/%s\">%s</a> [%d]<br></li>\n",
     result.document_name.c_str(),
     result.document_name.c_str(),
     result.rank);
+  }
+  
   return std::string(buf);
 }
 
