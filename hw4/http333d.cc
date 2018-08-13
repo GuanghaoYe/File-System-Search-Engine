@@ -100,13 +100,13 @@ void GetPortAndPath(int argc,
     Usage(argv[0]);
   }
   struct stat filestat;
-  if(stat(argv[2], &filestat) != 0 || (!filestat.st_mode & S_IFDIR)) {
+  if (stat(argv[2], &filestat) != 0 || (!filestat.st_mode & S_IFDIR)) {
     Usage(argv[0]);
   }
   *path = std::string(argv[2]);
   for (int i = 3; i <argc; ++i) {
     std::string index(argv[i]);
-    std::ifstream input (index.c_str());
+    std::ifstream input(index.c_str());
     if (input.good()) {
       indices->push_back(index);
     }

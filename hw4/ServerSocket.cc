@@ -59,7 +59,10 @@ bool ServerSocket::BindAndListen(int ai_family, int *listen_fd) {
   hints.ai_next = nullptr;
   addrinfo *result;
 
-  int res = getaddrinfo(nullptr, std::to_string(port_).c_str(), &hints, &result);
+  int res = getaddrinfo(nullptr,
+                        std::to_string(port_).c_str(),
+                        &hints,
+                        &result);
 
   // Did addrinfo() fail?
   if (res != 0) {
@@ -76,7 +79,6 @@ bool ServerSocket::BindAndListen(int ai_family, int *listen_fd) {
       *listen_fd = -1;
       continue;
     }
-    
     // set socket reuse address
     int optval = 1;
     setsockopt(*listen_fd, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
@@ -129,7 +131,7 @@ bool GetNetInfo(int fd, sockaddr *addr, size_t addrlen,
     *server_addr = addrbuf;
     getnameinfo(reinterpret_cast<const sockaddr *>(&srvr),
       srvrlen, server_hostname, 1024, nullptr, 0, 0);
-    *server_dnsname = server_hostname; 
+    *server_dnsname = server_hostname;
   } else if (addr->sa_family == AF_INET6) {
     // IPv6
     char astring[INET6_ADDRSTRLEN];
@@ -137,7 +139,7 @@ bool GetNetInfo(int fd, sockaddr *addr, size_t addrlen,
     inet_ntop(AF_INET6, &(in6->sin6_addr), astring, INET6_ADDRSTRLEN);
     *client_addr = astring;
     *client_port = ntohs(in6->sin6_port);
-    //done with client
+    // done with client
 
     char addrbuf[INET6_ADDRSTRLEN];
     sockaddr_in6 srvr;
@@ -147,7 +149,7 @@ bool GetNetInfo(int fd, sockaddr *addr, size_t addrlen,
     *server_addr = addrbuf;
     getnameinfo(reinterpret_cast<const sockaddr *>(&srvr),
       srvrlen, server_hostname, 1024, nullptr, 0, 0);
-    *server_dnsname = server_hostname; 
+    *server_dnsname = server_hostname;
   } else {
     return false;
   }
@@ -177,22 +179,22 @@ bool ServerSocket::Accept(int *accepted_fd,
   socklen_t caddr_len = sizeof (caddr);
   do {
     *accepted_fd = accept(listen_sock_fd_,
-                          reinterpret_cast<sockaddr *>(&caddr), 
+                          reinterpret_cast<sockaddr *>(&caddr),
                           &caddr_len);
-  } while((*accepted_fd < 0) &&
-         ((errno == EINTR) || (errno =EAGAIN) || (errno == EWOULDBLOCK)));
+  } while ((*accepted_fd < 0) &&
+          ((errno == EINTR) || (errno =EAGAIN) || (errno == EWOULDBLOCK)));
   if (*accepted_fd < 0) {
     std::cerr << "Failure on accept " << strerror(errno) << std::endl;
     return false;
   }
-  if(!GetNetInfo(*accepted_fd, 
-                 reinterpret_cast<sockaddr*>(&caddr), 
-                 caddr_len,
-                 client_addr, 
-                 client_port,
-                 client_dnsname,
-                 server_addr,
-                 server_dnsname))
+  if (!GetNetInfo(*accepted_fd,
+                  reinterpret_cast<sockaddr*>(&caddr),
+                  caddr_len,
+                  client_addr,
+                  client_port,
+                  client_dnsname,
+                  server_addr,
+                  server_dnsname))
     return false;
   return true;
 }
