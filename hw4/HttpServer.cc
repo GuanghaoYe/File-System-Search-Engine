@@ -335,7 +335,7 @@ HttpResponse ProcessFileRequest(const std::string &uri,
   parser.Parse(uri);
   fname = parser.get_path();
   fname = fname.substr(8);
-  if (!IsPathSafe(basedir, fname)) {
+  if (!IsPathSafe(basedir, basedir + '/' + fname)) {
     ret.protocol = "HTTP/1.1";
     ret.response_code = 403;
     ret.message = "Forbidden";

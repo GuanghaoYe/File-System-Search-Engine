@@ -98,9 +98,11 @@ bool ServerSocket::BindAndListen(int ai_family, int *listen_fd) {
     std::cerr << "Failed to mark socket as listening: ";
     std::cerr << strerror(errno) << std::endl;
     close(*listen_fd);
+    freeaddrinfo(result);
     return false;
   }
   listen_sock_fd_ = *listen_fd;
+  freeaddrinfo(result);
   return true;
 }
 
@@ -124,6 +126,7 @@ bool GetNetInfo(int fd, sockaddr *addr, size_t addrlen,
     // done with client
 
     char addrbuf[INET_ADDRSTRLEN];
+    addrbuf[0] = '\0';
     sockaddr_in srvr;
     socklen_t srvrlen = sizeof(srvr);
     getsockname(fd, reinterpret_cast<sockaddr *>(&srvr), &srvrlen);
@@ -142,6 +145,7 @@ bool GetNetInfo(int fd, sockaddr *addr, size_t addrlen,
     // done with client
 
     char addrbuf[INET6_ADDRSTRLEN];
+    addrbuf[0] = '\0';
     sockaddr_in6 srvr;
     socklen_t srvrlen = sizeof(srvr);
     getsockname(fd, reinterpret_cast<sockaddr *>(&srvr), &srvrlen);
