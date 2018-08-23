@@ -22,30 +22,26 @@ CPPUNITFLAGS = -L../gtest -lgtest
 OBJS =	ThreadPool.o ServerSocket.o HttpUtils.o HttpServer.o \
 	HttpConnection.o FileReader.o
 
-HEADERS = test_httpconnection.h HttpConnection.h \
+HEADERS =   HttpConnection.h \
 	  HttpServer.h \
-	  test_serversocket.h ServerSocket.h \
-	  test_threadpool.h ThreadPool.h \
-	  test_httputils.h HttpUtils.h \
+	    ServerSocket.h \
+	    ThreadPool.h \
+	    HttpUtils.h \
 	  HttpRequest.h HttpResponse.h \
-	  test_filereader.h FileReader.h
+	    FileReader.h
 
-TESTOBJS = test_httputils.o test_threadpool.o test_httpconnection.o \
-	   test_filereader.o test_serversocket.o test_suite.o
+TESTOBJS =       \
+	        
 
 # compile everything; this is the default rule that fires if a user
 # just types "make" in the same directory as this Makefile
-all: http333d test_suite
+all: http333d 
 
 http333d: http333d.o libhw4.a $(HEADERS)
 	$(CXX) $(CFLAGS) -o http333d http333d.o $(LDFLAGS)
 
 libhw4.a: $(OBJS) $(HEADERS)
 	$(AR) $(ARFLAGS) libhw4.a $(OBJS)
-
-test_suite: $(TESTOBJS) libhw4.a $(HEADERS)
-	$(CXX) $(CFLAGS) -o test_suite $(TESTOBJS) \
-	$(CPPUNITFLAGS) $(LDFLAGS) -lpthread
 
 %.o: %.cc $(HEADERS)
 	$(CXX) $(CFLAGS) -c $<
@@ -54,6 +50,6 @@ test_suite: $(TESTOBJS) libhw4.a $(HEADERS)
 	$(CC) $(CFLAGS) -c -std=c11 $<
 
 clean: FORCE
-	/bin/rm -f *.o *~ test_suite http333d libhw4.a
+	/bin/rm -f *.o *~ http333d libhw4.a
 
 FORCE:
