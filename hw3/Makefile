@@ -13,19 +13,16 @@ CC = gcc
 CXX = g++
 CFLAGS = -g -Wall -Wpedantic -std=c++11 -I. -I..
 LDFLAGS = -L./libhw2 -lhw2 -L./libhw1/ -lhw1
-HEADERS = test_fileindexutil.h fileindexutil.h \
-          test_fileindexwriter.h fileindexwriter.h \
-          test_fileindexreader.h FileIndexReader.h \
-          test_hashtablereader.h HashTableReader.h \
-          test_doctablereader.h DocTableReader.h \
-          test_indextablereader.h IndexTableReader.h \
-          test_docidtablereader.h DocIDTableReader.h \
-          test_queryprocessor.h QueryProcessor.h filelayout.h
+HEADERS =   fileindexutil.h \
+            fileindexwriter.h \
+            FileIndexReader.h \
+            HashTableReader.h \
+            DocTableReader.h \
+            IndexTableReader.h \
+            DocIDTableReader.h \
+            QueryProcessor.h filelayout.h
 
-TESTOBJS = test_suite.o test_fileindexutil.o test_fileindexwriter.o \
-           test_fileindexreader.o test_hashtablereader.o \
-           test_doctablereader.o test_indextablereader.o \
-           test_docidtablereader.o test_queryprocessor.o
+              
 
 OBJS = fileindexutil.o fileindexwriter.o FileIndexReader.o \
        IndexTableReader.o DocTableReader.o HashTableReader.o \
