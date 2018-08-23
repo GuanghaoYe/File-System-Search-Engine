@@ -34,10 +34,6 @@ libhw2.a: $(OBJS) $(HEADERS) FORCE
 searchshell: searchshell.o libhw2.a $(HEADERS) FORCE
 	$(CC) $(CFLAGS) -o searchshell searchshell.o $(LDFLAGS)
 
-test_suite: $(TESTOBJS) $(TESTHEADERS) libhw2.a FORCE
-	$(CXX) $(CFLAGS) -o test_suite $(TESTOBJS) \
-	$(CPPUNITFLAGS) $(LDFLAGS) -lpthread $(LDFLAGS)
-
 %.o: %.cc $(HEADERS) FORCE
 	$(CXX) $(CFLAGS) -std=c++11 -c $<
 
@@ -45,6 +41,6 @@ test_suite: $(TESTOBJS) $(TESTHEADERS) libhw2.a FORCE
 	$(CC) $(CFLAGS) -c -std=c11 $<
 
 clean: FORCE
-	/bin/rm -f *.o *~ test_suite searchshell libhw2.a
+	/bin/rm -f *.o *~ searchshell libhw2.a
 
 FORCE:

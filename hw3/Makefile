@@ -45,15 +45,11 @@ dumpfileindex: dumpfileindex.o libhw3.a $(HEADERS)
 libhw3.a: $(OBJS) $(HEADERS)
 	$(AR) $(ARFLAGS) libhw3.a $(OBJS)
 
-test_suite: $(TESTOBJS) $(OBJS) $(HEADERS)
-	$(CXX) $(CFLAGS) -o test_suite $(OBJS) $(TESTOBJS) \
-	$(CPPUNITFLAGS) $(LDFLAGS)
-
 %.o: %.cc $(HEADERS)
 	$(CXX) $(CFLAGS) -c $<
 
 clean: FORCE
-	/bin/rm -f *.o *~ test_suite libhw3.a buildfileindex \
+	/bin/rm -f *.o *~ libhw3.a buildfileindex \
         dumpfileindex filesearchshell
 
 FORCE:

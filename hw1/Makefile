@@ -37,10 +37,6 @@ example_program_ht: example_program_ht.o libhw1.a $(HEADERS) FORCE
 libhw1.a: $(OBJS) $(HEADERS) FORCE
 	$(AR) $(ARFLAGS) libhw1.a $(OBJS)
 
-test_suite: $(TESTOBJS) $(TESTHEADERS) libhw1.a FORCE
-	$(CXX) $(CFLAGS) -o test_suite $(TESTOBJS) \
-	$(CPPUNITFLAGS) $(LDFLAGS) -lpthread $(LDFLAGS)
-
 %.o: %.cc $(HEADERS) FORCE
 	$(CXX) $(CFLAGS) -std=c++11 -c $<
 
@@ -48,7 +44,7 @@ test_suite: $(TESTOBJS) $(TESTHEADERS) libhw1.a FORCE
 	$(CC) $(CFLAGS) -c -std=c11 $<
 
 clean: FORCE
-	/bin/rm -f *.o *~ *.gcno *.gcda *.gcov test_suite libhw1.a \
+	/bin/rm -f *.o *~ *.gcno *.gcda *.gcov libhw1.a \
     example_program_ll example_program_ht
 
 FORCE:
