@@ -13,11 +13,12 @@ where `<docroot>` is an absolute or relative path to a directory to build an ind
 
 ## Build the indexes
 ```
-./hw3/buildfileindex crawlrootdir indexfilename
+./hw3/buildfileindex <crawlrootdir> <indexfilename>
 ```
 where:
-  crawlrootdir is the name of a directory to crawl
-  indexfilename is the name of the index file to create
+  `<crawlrootdir>` is the name of a directory to crawl
+  
+  `<indexfilename>` is the name of the index file to create
 
 ## Run search engine in terminal
 ```
