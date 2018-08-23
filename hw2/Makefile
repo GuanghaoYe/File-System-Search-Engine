@@ -16,7 +16,6 @@ CXX = g++
 # define useful flags to cc/ld/etc.
 CFLAGS = -g -Wall -Wpedantic -I. -I.. -O0
 LDFLAGS = -L. -L./libhw1/ -lhw2 -lhw1
-CPPUNITFLAGS = -L../gtest -lgtest
 
 #define common dependencies
 OBJS = fileparser.o filecrawler.o doctable.o memindex.o
@@ -27,7 +26,7 @@ TESTHEADERS = test_fileparser.h test_doctable.h test_filecrawler.h \
               test_memindex.h
 
 # compile everything
-all: test_suite searchshell libhw2.a FORCE
+all: searchshell libhw2.a FORCE
 
 libhw2.a: $(OBJS) $(HEADERS) FORCE
 	$(AR) $(ARFLAGS) libhw2.a $(OBJS)

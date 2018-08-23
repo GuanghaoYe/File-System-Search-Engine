@@ -16,7 +16,7 @@ CXX = g++
 # define useful flags to cc/ld/etc.
 CFLAGS += -g -Wall -Wpedantic -I. -I.. -O0
 LDFLAGS += -L. -lhw1
-CPPUNITFLAGS = -L../gtest -lgtest
+CPPUNITFLAGS = 
 
 # define common dependencies
 OBJS = LinkedList.o HashTable.o Verify333.o
@@ -26,7 +26,7 @@ TESTHEADERS = test_linkedlist.h test_hashtable.h
 
 # compile everything; this is the default rule that fires if a user
 # just types "make" in the same directory as this Makefile
-all: test_suite example_program_ll example_program_ht FORCE
+all: example_program_ll example_program_ht FORCE
 
 example_program_ll: example_program_ll.o libhw1.a $(HEADERS) FORCE
 	$(CC) $(CFLAGS) -o example_program_ll example_program_ll.o $(LDFLAGS)

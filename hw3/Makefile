@@ -13,7 +13,6 @@ CC = gcc
 CXX = g++
 CFLAGS = -g -Wall -Wpedantic -std=c++11 -I. -I..
 LDFLAGS = -L./libhw2 -lhw2 -L./libhw1/ -lhw1
-CPPUNITFLAGS = -L../gtest -lgtest -lpthread
 HEADERS = test_fileindexutil.h fileindexutil.h \
           test_fileindexwriter.h fileindexwriter.h \
           test_fileindexreader.h FileIndexReader.h \
@@ -32,7 +31,7 @@ OBJS = fileindexutil.o fileindexwriter.o FileIndexReader.o \
        IndexTableReader.o DocTableReader.o HashTableReader.o \
        DocIDTableReader.o QueryProcessor.o
 
-all: buildfileindex filesearchshell test_suite libhw3.a
+all: buildfileindex filesearchshell libhw3.a
 
 filesearchshell: filesearchshell.o libhw3.a $(HEADERS)
 	$(CXX) $(CFLAGS) -o filesearchshell filesearchshell.o \
